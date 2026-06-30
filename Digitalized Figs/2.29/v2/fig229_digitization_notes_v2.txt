@@ -1,0 +1,28 @@
+Second-pass digitization of Nelson 2nd ed. Fig. 2.29
+
+Files:
+- wingBody_kn_from_fig229_v2.m
+- figure_2_29_digitized_samples_v2.csv
+
+Method:
+1) Re-digitize the three line-family blocks from tighter crops supplied later.
+2) Upper-left block:
+   - Estimate each l_f^2/S_fs family line at two reference x-columns.
+   - Interpolate linearly between the two columns.
+3) Upper-right block:
+   - Re-estimate the five sqrt(h1/h2) rays near their common pivot.
+4) Lower-right block:
+   - Re-estimate the five h/w_f rays and the k_n vertical scale.
+5) Chain the three blocks as a nomogram.
+
+Why this version should be better:
+- The common-pivot regions in the upper-right and lower-right blocks were re-read
+  from tighter crops, because those regions are most sensitive to small pixel errors.
+- The upper-left line family was re-estimated from crop-specific coordinates rather
+  than reusing the full-figure coordinates.
+
+Important:
+- This is still a digitization from a screenshot of a PDF, so treat it as an
+  engineering approximation rather than a canonical source.
+- The best way to build confidence is to compare this function against 10-20 fresh
+  hand-read points, especially near the pivot region.

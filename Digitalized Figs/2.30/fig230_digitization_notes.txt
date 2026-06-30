@@ -1,0 +1,24 @@
+Figure 2.30 first-pass digitization notes
+
+Source image: user-provided scan Fig2.30.png
+Method: axis-box calibration + Hough-line detection of the single plotted line.
+
+Axis interpretation:
+- Horizontal axis: k_Rl from 1.0 to 2.2 (linear)
+- Vertical axis: R_lf x 10^-6 from 1 to 1000 (log10 scale)
+
+Image calibration used:
+- Plot box left/right:   x = 177 to 419 px
+- Plot box top/bottom:   y = 25 to 344 px
+- Detected main line: approximately from (173,344) to (420,69) px
+
+Important caveat:
+- This is a first-pass digitization from the uploaded image, not from a fresh high-resolution scan.
+- Because the vertical axis is logarithmic, interpolation should be done in log10(R_lf x 10^-6), not directly in R_lf.
+
+Convenient fitted relation from this digitization:
+- Let Rm = R_lf * 1e-6
+- Then k_Rl ≈ 0.9730 + 0.2063 * log10(Rm)
+- Inverse: log10(Rm) ≈ (k_Rl - 0.9730)/0.2063
+
+These coefficients come from the calibrated line geometry above, not from OCR.

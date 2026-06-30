@@ -1,0 +1,23 @@
+family,param,x0,y0,x1,y1,slope,notes
+upper_left,2.5,13.0,177.971340,384.0,41.656610,,-estimated line endpoints in crop coords
+upper_left,3.0,13.0,198.996169,384.0,70.503208,,-estimated line endpoints in crop coords
+upper_left,4.0,13.0,227.327067,384.0,104.407804,,-estimated line endpoints in crop coords
+upper_left,5.0,13.0,251.566522,384.0,132.572839,,-estimated line endpoints in crop coords
+upper_left,6.0,13.0,277.310884,384.0,158.037950,,-estimated line endpoints in crop coords
+upper_left,7.0,13.0,297.176473,384.0,177.572567,,-estimated line endpoints in crop coords
+upper_left,8.0,13.0,311.960573,384.0,191.879097,,-estimated line endpoints in crop coords
+upper_left,10.0,13.0,323.768457,384.0,203.664174,,-estimated line endpoints in crop coords
+upper_left,14.0,13.0,348.129466,384.0,228.269485,,-estimated line endpoints in crop coords
+upper_left,20.0,13.0,365.246295,384.0,242.643603,,-estimated line endpoints in crop coords
+upper_right,0.8,20.0,343.0,,, -1.282268,common pivot (x0,y0) and slope
+upper_right,1.0,20.0,343.0,,, -1.056315,common pivot (x0,y0) and slope
+upper_right,1.2,20.0,343.0,,, -0.869715,common pivot (x0,y0) and slope
+upper_right,1.4,20.0,343.0,,, -0.754873,common pivot (x0,y0) and slope
+upper_right,1.6,20.0,343.0,,, -0.651388,common pivot (x0,y0) and slope
+lower_right,0.5,161.0,30.0,,,0.555556,common pivot (x0,y0) and slope
+lower_right,0.6,161.0,30.0,,,0.726564,common pivot (x0,y0) and slope
+lower_right,0.8,161.0,30.0,,,0.965642,common pivot (x0,y0) and slope
+lower_right,1.0,161.0,30.0,,,1.146960,common pivot (x0,y0) and slope
+lower_right,2.0,161.0,30.0,,,1.279635,common pivot (x0,y0) and slope
+registration,UL_to_UR_affine,,, , ,0.937534,y_ur = 13.596622 + 0.937534*y_ul
+registration,UL_to_UR_offset,13.596622,,,,,affine intercept

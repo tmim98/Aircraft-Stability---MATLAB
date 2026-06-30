@@ -1,0 +1,48 @@
+Third-pass digitization notes for Nelson Fig. 2.29
+
+Summary
+-------
+This pass replaces the previous constant-offset crop stitching with a more
+defensible procedure:
+  1) detect / calibrate each crop by its grid spacing,
+  2) estimate the labeled line families from each crop,
+  3) move between crops in normalized grid coordinates,
+  4) use interpolation only at run time in MATLAB.
+
+Important design choice
+-----------------------
+The CSV stores only the digitized "authoritative" family definitions and the
+cross-block registration coefficients.  It does NOT pre-store artificial
+in-between values such as x_m/l_f = 0.25 or h/w_f = 0.9.
+
+That is intentional.  Interpolation should happen in the MATLAB function,
+not be baked into the CSV, because:
+  - it keeps the source data auditable,
+  - it avoids compounding interpolation-on-top-of-interpolation,
+  - it lets you change the interpolation method later.
+
+Manual spot-checks used as calibration anchors
+----------------------------------------------
+The user reported these approximate hand-read values as likely better than the
+earlier automated passes:
+  (0.2, 4, 1.0, 0.8)  -> k_n ≈ 0.0016
+  (0.1, 7, 1.4, 1.0)  -> k_n ≈ 0.00085
+  (0.4, 14, 1.6, 2.0) -> k_n ≈ 0.00119
+
+This v3 pass lightly calibrates the UL->UR y-registration so that the automated
+reader better agrees with those checks without abandoning the underlying
+line-family geometry.
+
+Result on those three points
+----------------------------
+Using wingBody_kn_from_fig229_v3.m:
+  (0.2, 4, 1.0, 0.8)  -> 0.001600
+  (0.1, 7, 1.4, 1.0)  -> 0.000818
+  (0.4, 14, 1.6, 2.0) -> 0.001232
+
+Interpretation
+--------------
+The first point matches essentially exactly.  The second and third are much
+closer to the user's hand checks than the prior versions, but still not exact.
+That is appropriate for a chart of this scan quality.  Treat the function as an
+engineering approximation, not as a source of exact tabulated data.
