@@ -96,6 +96,12 @@ out.inputs.longitudinal_AVS = long_pAV;
 out.inputs.longitudinal_SI = long_pSI;
 out.inputs.lateral_directional_AVS = lat_pAV;
 
+% Standardized dual-unit input containers.
+% These new fields are added for the SI/AVS expansion while the old
+% out.inputs.* fields remain available for compatibility.
+[out.inputs_SI, out.inputs_AVS] = build_dual_input_snapshots(long_pAV, long_pSI, lat_pAV);
+
+
 out.longitudinal = long_out;
 out.lateral_directional = lat_out;
 
@@ -183,9 +189,10 @@ fprintf('\nUseful fields to inspect:\n');
 fprintf('  out.longitudinal\n');
 fprintf('  out.lateral_directional\n');
 fprintf('  out.inputs\n');
+fprintf('  out.inputs_SI\n');
+fprintf('  out.inputs_AVS\n');
 fprintf('  out.summary\n');
 fprintf('  out.reports.combined\n');
-
 % -------------------------------------------------------------------------
 % Mode-response plots
 % -------------------------------------------------------------------------
@@ -217,6 +224,8 @@ if strcmpi(strtrim(export_answer), 'Y') || strcmpi(strtrim(export_answer), 'YES'
     fprintf('  Longitudinal_Input_AVS\n');
     fprintf('  Longitudinal_Input_SI\n');
     fprintf('  Lateral_Directional_Input_AVS\n');
+    fprintf('  Inputs_AVS\n');
+    fprintf('  Inputs_SI\n');
     fprintf('  Reports\n');
 else
     fprintf('\nXLSX export skipped. You can re-run this script and answer Y later.\n');
@@ -455,7 +464,13 @@ function local_export_combined_xlsx(out, xlsx_file)
     local_write_sheet(xlsx_file, 'Longitudinal_Input_AVS', local_struct_to_sheet(out.inputs.longitudinal_AVS, 'inputs.longitudinal_AVS'));
     local_write_sheet(xlsx_file, 'Longitudinal_Input_SI', local_struct_to_sheet(out.inputs.longitudinal_SI, 'inputs.longitudinal_SI'));
     local_write_sheet(xlsx_file, 'Lateral_Directional_Input_AVS', local_struct_to_sheet(out.inputs.lateral_directional_AVS, 'inputs.lateral_directional_AVS'));
-    local_write_sheet(xlsx_file, 'Reports', local_make_reports_sheet(out));
+
+    % New standardized SI/AVS input containers.
+    % These duplicate some existing input information intentionally, but with
+    % a cleaner structure for the unit-system expansion.
+    local_write_sheet(xlsx_file, 'Inputs_AVS', local_struct_to_sheet(out.inputs_AVS, 'inputs_AVS'));
+    local_write_sheet(xlsx_file, 'Inputs_SI', local_struct_to_sheet(out.inputs_SI, 'inputs_SI'));
+        local_write_sheet(xlsx_file, 'Reports', local_make_reports_sheet(out));
 end
 
 function sheet = local_make_summary_sheet(out)
