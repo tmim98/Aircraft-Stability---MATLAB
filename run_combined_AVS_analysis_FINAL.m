@@ -230,6 +230,7 @@ if strcmpi(strtrim(export_answer), 'Y') || strcmpi(strtrim(export_answer), 'YES'
     fprintf('\nCombined XLSX workbook saved to:\n  %s\n', combined_xlsx_file);
     fprintf('Workbook sheets created:\n');
     fprintf('  Summary\n');
+    fprintf('  Unit_System_Guide\n');
     fprintf('  Longitudinal_Output\n');
     fprintf('  Lateral_Directional_Output\n');
     fprintf('  Longitudinal_Output_SI\n');
@@ -474,6 +475,7 @@ function local_export_combined_xlsx(out, xlsx_file)
     end
 
     local_write_sheet(xlsx_file, 'Summary', local_make_summary_sheet(out));
+    local_write_sheet(xlsx_file, 'Unit_System_Guide', local_make_unit_system_guide_sheet());
     local_write_sheet(xlsx_file, 'Longitudinal_Output', local_struct_to_sheet(out.longitudinal, 'longitudinal'));
     local_write_sheet(xlsx_file, 'Lateral_Directional_Output', local_struct_to_sheet(out.lateral_directional, 'lateral_directional'));
     local_write_sheet(xlsx_file, 'Longitudinal_Output_SI', local_struct_to_sheet(out.longitudinal_outputs_SI, 'longitudinal_outputs_SI'));
@@ -490,6 +492,30 @@ function local_export_combined_xlsx(out, xlsx_file)
     local_write_sheet(xlsx_file, 'Inputs_AVS', local_struct_to_sheet(out.inputs_AVS, 'inputs_AVS'));
     local_write_sheet(xlsx_file, 'Inputs_SI', local_struct_to_sheet(out.inputs_SI, 'inputs_SI'));
     local_write_sheet(xlsx_file, 'Reports', local_make_reports_sheet(out));
+end
+
+function sheet = local_make_unit_system_guide_sheet()
+    sheet = {
+        'Section', 'Field or sheet', 'Unit system', 'Meaning';
+        'Inputs', 'out.inputs_AVS.longitudinal', 'AVS', 'Original longitudinal aircraft-case input struct.';
+        'Inputs', 'out.inputs_AVS.lateral_directional', 'AVS', 'Original lateral/directional aircraft-case input struct.';
+        'Inputs', 'out.inputs_SI.longitudinal', 'SI', 'Converted longitudinal input struct used by the SI longitudinal core.';
+        'Inputs', 'out.inputs_SI.lateral_directional', 'SI', 'Converted lateral/directional input snapshot for reporting/export only.';
+        'Outputs', 'out.longitudinal_outputs_SI', 'SI', 'Native longitudinal output from the SI longitudinal core.';
+        'Outputs', 'out.longitudinal_outputs_AVS', 'AVS', 'Converted longitudinal output snapshot for reporting/export only.';
+        'Outputs', 'out.lateral_outputs_AVS', 'AVS', 'Native lateral/directional output from the AVS lateral core.';
+        'Outputs', 'out.lateral_outputs_SI', 'SI', 'Converted lateral/directional output snapshot for reporting/export only.';
+        'Legacy compatibility', 'out.longitudinal', 'Native SI', 'Original longitudinal output field retained for compatibility.';
+        'Legacy compatibility', 'out.lateral_directional', 'Native AVS', 'Original lateral/directional output field retained for compatibility.';
+        'Legacy compatibility', 'out.inputs.*', 'Mixed', 'Original input fields retained until the unit-system transition is complete.';
+        'Workbook sheet', 'Longitudinal_Output_SI', 'SI', 'Flattened version of out.longitudinal_outputs_SI.';
+        'Workbook sheet', 'Longitudinal_Output_AVS', 'AVS', 'Flattened version of out.longitudinal_outputs_AVS.';
+        'Workbook sheet', 'Lateral_Output_AVS', 'AVS', 'Flattened version of out.lateral_outputs_AVS.';
+        'Workbook sheet', 'Lateral_Output_SI', 'SI', 'Flattened version of out.lateral_outputs_SI.';
+        'Conversion note', 'Eigenvalues and damping/frequency quantities', 'seconds-based', 'Copied unchanged between SI and AVS snapshots.';
+        'Conversion note', 'Dimensionless aerodynamic coefficients', 'dimensionless', 'Copied unchanged between SI and AVS snapshots.';
+        'Conversion note', 'Converted snapshots', 'SI or AVS', 'Provided for reporting/export; analysis cores still use their existing native unit paths.';
+        };
 end
 
 function sheet = local_make_summary_sheet(out)
