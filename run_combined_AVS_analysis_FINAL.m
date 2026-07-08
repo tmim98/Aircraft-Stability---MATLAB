@@ -24,12 +24,25 @@
 %   nested structs, and text are all written safely.
 %
 % Public workspace outputs:
-%   out                         Combined grouped output struct
-%   long_out                    Longitudinal output struct
-%   lat_out                     Lateral/directional output struct
-%   combined_report_text         Combined text report as a string/char array
-%   combined_report_file         Path to the saved .txt report
-%   combined_xlsx_file           Path to the saved .xlsx workbook, if exported
+%   out                          Combined grouped output struct
+%   long_out                     Native longitudinal output struct
+%   lat_out                      Native lateral/directional output struct
+%   combined_report_text          Combined text report as a string/char array
+%   combined_report_file          Path to the saved .txt report
+%   combined_xlsx_file            Path to the saved .xlsx workbook, if exported
+%
+% Main standardized fields inside out:
+%   out.inputs_AVS                Original AVS input snapshots
+%   out.inputs_SI                 SI input snapshots
+%   out.longitudinal_outputs_SI   Native longitudinal SI output
+%   out.longitudinal_outputs_AVS  Converted longitudinal AVS output snapshot
+%   out.lateral_outputs_AVS       Native lateral/directional AVS output
+%   out.lateral_outputs_SI        Converted lateral/directional SI output snapshot
+%
+% Legacy compatibility fields:
+%   out.inputs                    Original mixed input container
+%   out.longitudinal              Same as out.longitudinal_outputs_SI
+%   out.lateral_directional       Same as out.lateral_outputs_AVS
 
 clear; clc;
 
