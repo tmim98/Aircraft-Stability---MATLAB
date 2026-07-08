@@ -477,7 +477,8 @@ function local_export_combined_xlsx(out, xlsx_file)
     local_write_sheet(xlsx_file, 'Longitudinal_Output_SI', local_struct_to_sheet(out.longitudinal_outputs_SI, 'longitudinal_outputs_SI'));
     local_write_sheet(xlsx_file, 'Longitudinal_Output_AVS', local_struct_to_sheet(out.longitudinal_outputs_AVS, 'longitudinal_outputs_AVS'));
     local_write_sheet(xlsx_file, 'Lateral_Output_AVS', local_struct_to_sheet(out.lateral_outputs_AVS, 'lateral_outputs_AVS'));
-    local_write_sheet(xlsx_file, 'Longitudinal_Input_AVS', local_struct_to_sheet(out.inputs.longitudinal_AVS, 'inputs.longitudinal_AVS'));    local_write_sheet(xlsx_file, 'Longitudinal_Input_SI', local_struct_to_sheet(out.inputs.longitudinal_SI, 'inputs.longitudinal_SI'));
+    local_write_sheet(xlsx_file, 'Longitudinal_Input_AVS', local_struct_to_sheet(out.inputs.longitudinal_AVS, 'inputs.longitudinal_AVS'));
+    local_write_sheet(xlsx_file, 'Longitudinal_Input_SI', local_struct_to_sheet(out.inputs.longitudinal_SI, 'inputs.longitudinal_SI'));
     local_write_sheet(xlsx_file, 'Lateral_Directional_Input_AVS', local_struct_to_sheet(out.inputs.lateral_directional_AVS, 'inputs.lateral_directional_AVS'));
 
     % New standardized SI/AVS input containers.
