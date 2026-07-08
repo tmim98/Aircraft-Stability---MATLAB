@@ -43,6 +43,10 @@
 %   out.inputs                    Original mixed input container
 %   out.longitudinal              Same as out.longitudinal_outputs_SI
 %   out.lateral_directional       Same as out.lateral_outputs_AVS
+%
+% Unit-system documentation:
+%   See UNIT_SYSTEMS.md for the SI/AVS input-output structure, workbook
+%   sheets, conversion scope, and sign-convention notes.
 
 clear; clc;
 
