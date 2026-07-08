@@ -83,6 +83,10 @@ out.meta.aircraft = local_first_existing({ ...
     local_getfield_safe(long_pAV, 'aircraft'), ...
     'Aircraft stability analysis'});
 out.meta.units_input = 'AVS';
+out.meta.units_input_native = 'AVS aircraft-case input scripts';
+out.meta.units_output_available = 'SI and AVS standardized output snapshots';
+out.meta.units_conversion_scope = ...
+    'Reporting/export snapshots only; analysis cores remain in native unit paths.';
 out.meta.longitudinal_core = 'SI_longitudinal_analysis_grouped';
 out.meta.lateral_directional_core = 'AVS_lateral_directional_analysis';
 out.meta.created = char(datetime('now'));
@@ -525,6 +529,9 @@ function sheet = local_make_summary_sheet(out)
         'Meta', 'Aircraft case', local_value_to_text(local_getfield_safe(out.meta, 'aircraft_case'));
         'Meta', 'Aircraft', local_value_to_text(out.meta.aircraft);
         'Meta', 'Input units', out.meta.units_input;
+        'Meta', 'Native input source', local_value_to_text(local_getfield_safe(out.meta, 'units_input_native'));
+        'Meta', 'Available output systems', local_value_to_text(local_getfield_safe(out.meta, 'units_output_available'));
+        'Meta', 'Conversion scope', local_value_to_text(local_getfield_safe(out.meta, 'units_conversion_scope'));
         'Meta', 'Project folder', local_value_to_text(local_getfield_safe(out.meta, 'project_folder'));
         'Meta', 'Case folder', local_value_to_text(local_getfield_safe(out.meta, 'case_folder'));
         'Meta', 'Results folder', local_value_to_text(local_getfield_safe(out.meta, 'results_folder'));
