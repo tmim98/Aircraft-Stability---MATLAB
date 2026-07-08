@@ -105,11 +105,13 @@ out.inputs.lateral_directional_AVS = lat_pAV;
 out.longitudinal = long_out;
 out.lateral_directional = lat_out;
 
-% Standardized native-unit output containers.
-% Opposite-unit output containers will be added after conversion helpers are validated.
+% Standardized output containers.
+% Longitudinal native output is SI; an AVS reporting/export snapshot is
+% created from the validated SI-to-AVS output converter.
+% Lateral native output is currently AVS.
 out.longitudinal_outputs_SI = long_out;
+out.longitudinal_outputs_AVS = longitudinal_output_SI_to_AVS_snapshot(long_out);
 out.lateral_outputs_AVS = lat_out;
-
 out.reports = struct();
 out.reports.longitudinal = longitudinal_report;
 out.reports.lateral_directional = lateral_report;
@@ -194,6 +196,7 @@ fprintf('\nUseful fields to inspect:\n');
 fprintf('  out.longitudinal\n');
 fprintf('  out.lateral_directional\n');
 fprintf('  out.longitudinal_outputs_SI\n');
+fprintf('  out.longitudinal_outputs_AVS\n');
 fprintf('  out.lateral_outputs_AVS\n');
 fprintf('  out.inputs\n');
 fprintf('  out.inputs_SI\n');
@@ -229,6 +232,7 @@ if strcmpi(strtrim(export_answer), 'Y') || strcmpi(strtrim(export_answer), 'YES'
     fprintf('  Longitudinal_Output\n');
     fprintf('  Lateral_Directional_Output\n');
     fprintf('  Longitudinal_Output_SI\n');
+    fprintf('  Longitudinal_Output_AVS\n');
     fprintf('  Lateral_Output_AVS\n');
     fprintf('  Longitudinal_Input_AVS\n');
     fprintf('  Longitudinal_Input_SI\n');
@@ -471,9 +475,9 @@ function local_export_combined_xlsx(out, xlsx_file)
     local_write_sheet(xlsx_file, 'Longitudinal_Output', local_struct_to_sheet(out.longitudinal, 'longitudinal'));
     local_write_sheet(xlsx_file, 'Lateral_Directional_Output', local_struct_to_sheet(out.lateral_directional, 'lateral_directional'));
     local_write_sheet(xlsx_file, 'Longitudinal_Output_SI', local_struct_to_sheet(out.longitudinal_outputs_SI, 'longitudinal_outputs_SI'));
+    local_write_sheet(xlsx_file, 'Longitudinal_Output_AVS', local_struct_to_sheet(out.longitudinal_outputs_AVS, 'longitudinal_outputs_AVS'));
     local_write_sheet(xlsx_file, 'Lateral_Output_AVS', local_struct_to_sheet(out.lateral_outputs_AVS, 'lateral_outputs_AVS'));
-    local_write_sheet(xlsx_file, 'Longitudinal_Input_AVS', local_struct_to_sheet(out.inputs.longitudinal_AVS, 'inputs.longitudinal_AVS'));
-    local_write_sheet(xlsx_file, 'Longitudinal_Input_SI', local_struct_to_sheet(out.inputs.longitudinal_SI, 'inputs.longitudinal_SI'));
+    local_write_sheet(xlsx_file, 'Longitudinal_Input_AVS', local_struct_to_sheet(out.inputs.longitudinal_AVS, 'inputs.longitudinal_AVS'));    local_write_sheet(xlsx_file, 'Longitudinal_Input_SI', local_struct_to_sheet(out.inputs.longitudinal_SI, 'inputs.longitudinal_SI'));
     local_write_sheet(xlsx_file, 'Lateral_Directional_Input_AVS', local_struct_to_sheet(out.inputs.lateral_directional_AVS, 'inputs.lateral_directional_AVS'));
 
     % New standardized SI/AVS input containers.
