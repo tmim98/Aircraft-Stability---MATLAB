@@ -29,6 +29,7 @@
 % - fig3_12_digitized_K_vs_eta_lambda_0_5.csv
 
 pAV.units = 'AVS';
+pAV.input_unit_system = 'AVS'; % User-declared input system: 'AVS' or 'SI'
 pAV.aircraft = 'NAVION General Aviation';   % current case-study aircraft name
 
 %% ================= FLIGHT CONDITION =================

@@ -32,6 +32,7 @@ addpath(project_folder);
 
 % ================= AVIATION-STANDARD INPUTS =================
 pAV.units = 'AVS';
+pAV.input_unit_system = 'AVS'; % User-declared input system: 'AVS' or 'SI'
 pAV.aircraft = 'Boeing 747';
 pAV.case_folder = case_folder;
 pAV.project_folder = project_folder;

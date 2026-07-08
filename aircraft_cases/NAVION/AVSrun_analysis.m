@@ -8,6 +8,7 @@ clear; clc;
 
 % ================= AVIATION-STANDARD INPUTS =================
 pAV.units = 'AVS';
+pAV.input_unit_system = 'AVS'; % User-declared input system: 'AVS' or 'SI'
 
 % Flight condition
 pAV.u0_kt = 104.28;                 % knots
