@@ -4,7 +4,8 @@ This project uses small, batch-based changes. Each batch should be validated bef
 
 The main validation target is the combined workbook exported by:
 
-    run_combined_AVS_analysis_FINAL
+&#x20;   run\_combined\_AVS\_analysis\_FINAL
+
 
 The validation process compares the newly generated workbook against the previously approved workbook for the same aircraft case.
 
@@ -12,54 +13,58 @@ The validation process compares the newly generated workbook against the previou
 
 For normal validation, run both supported aircraft cases:
 
-    NAVION
+&#x20;   NAVION
     B747
+
 
 For each case, answer `Y` when the runner asks whether to export the combined workbook.
 
 The expected workbook path is:
 
-    results/<AIRCRAFT_CASE>/combined_stability_outputs.xlsx
+&#x20;   results/<AIRCRAFT\_CASE>/combined\_stability\_outputs.xlsx
+
 
 For manual tracking during batch validation, copy or rename the exported files using names such as:
 
-    NAVION_batch##_combined_stability_outputs.xlsx
-    B747_batch##_combined_stability_outputs.xlsx
+&#x20;   NAVION\_batch##\_combined\_stability\_outputs.xlsx
+    B747\_batch##\_combined\_stability\_outputs.xlsx
+
 
 ## What should be compared
 
 Compare the new workbook against the previous approved workbook for the same aircraft:
 
-    NAVION_batch## versus NAVION_previous_batch
-    B747_batch## versus B747_previous_batch
+&#x20;   NAVION\_batch## versus NAVION\_previous\_batch
+    B747\_batch## versus B747\_previous\_batch
+
 
 The comparison should cover:
 
-- Sheet names
-- Sheet dimensions
-- Cell-by-cell values
-- Complex-value real and imaginary columns
-- Text metadata where relevant
+* Sheet names
+* Sheet dimensions
+* Cell-by-cell values
+* Complex-value real and imaginary columns
+* Text metadata where relevant
 
 ## Expected acceptable differences
 
 The following differences are normally acceptable:
 
-- Timestamp changes in the `Summary` sheet
-- New sheets that were intentionally added by the current batch
-- New metadata rows that were intentionally added by the current batch
-- Comment-only or documentation-only changes causing no workbook changes
+* Timestamp changes in the `Summary` sheet
+* New sheets that were intentionally added by the current batch
+* New metadata rows that were intentionally added by the current batch
+* Comment-only or documentation-only changes causing no workbook changes
 
 The following differences are not acceptable unless the batch explicitly intended them:
 
-- Changes to eigenvalues
-- Changes to dimensional derivatives
-- Changes to nondimensional aerodynamic coefficients
-- Changes to state-space matrices
-- Changes to modal classifications
-- Changes to static-stability values
-- Disappearing sheets or missing fields
-- Unexpected unit-conversion changes
+* Changes to eigenvalues
+* Changes to dimensional derivatives
+* Changes to nondimensional aerodynamic coefficients
+* Changes to state-space matrices
+* Changes to modal classifications
+* Changes to static-stability values
+* Disappearing sheets or missing fields
+* Unexpected unit-conversion changes
 
 ## Numerical safety rule
 
@@ -67,23 +72,23 @@ Any batch that can affect calculations must be validated by comparing the newly 
 
 For this project, a calculation-affecting batch includes changes to:
 
-- Input conversion helpers
-- Output conversion helpers
-- Analysis-core code
-- State-space matrix construction
-- Stability derivatives
-- Sign conventions
-- Plot data generation if it touches computed modal data
-- Workbook export code if it changes which data are written
+* Input conversion helpers
+* Output conversion helpers
+* Analysis-core code
+* State-space matrix construction
+* Stability derivatives
+* Sign conventions
+* Plot data generation if it touches computed modal data
+* Workbook export code if it changes which data are written
 
 ## Low-risk batches
 
 The following batches usually do not require a full NAVION/B747 rerun:
 
-- Markdown documentation files
-- Comment-only MATLAB edits
-- README-only changes
-- Header documentation updates
+* Markdown documentation files
+* Comment-only MATLAB edits
+* README-only changes
+* Header documentation updates
 
 Even for low-risk batches, inspect the changed file before committing.
 
@@ -95,10 +100,11 @@ Do not commit generated validation artifacts unless they are intentionally meant
 
 Usually leave these unchecked in GitHub Desktop:
 
-    combined_stability_outputs.xlsx
-    combined_stability_report.txt
-    Mode_Response_Plots/
+&#x20;   combined\_stability\_outputs.xlsx
+    combined\_stability\_report.txt
+    Mode\_Response\_Plots/
     results/
+
 
 The preferred workflow is:
 
@@ -114,3 +120,4 @@ The preferred workflow is:
 The unit-system expansion must not change aerodynamic sign conventions.
 
 Control-derivative and stability-derivative signs remain governed by the existing validated NAVION/B747 implementation and the current analysis-core conventions.
+

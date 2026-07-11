@@ -566,3 +566,331 @@ The first version should prioritize:
 
 &#x20;   warnings
 
+
+
+\---
+
+
+
+\## G. Detailed First Sweep Definition: u\_0
+
+
+
+\### G.1 Purpose
+
+
+
+The first parametric sweep will vary the trim/reference speed `u\_0`.
+
+
+
+This parameter is selected first because it affects both longitudinal and lateral/directional dynamics while still having a clear physical interpretation.
+
+
+
+\### G.2 Canonical parameter
+
+
+
+Canonical name:
+
+
+
+&#x20;   u\_0
+
+
+
+Meaning:
+
+
+
+&#x20;   Trim/reference flight speed
+
+
+
+Primary unit system:
+
+
+
+&#x20;   AVS input value, normally ft/s
+
+
+
+SI equivalent:
+
+
+
+&#x20;   m/s
+
+
+
+\### G.3 Baseline source
+
+
+
+The baseline value should be read from the selected aircraft input structure.
+
+
+
+The parametric sweep must not permanently edit the aircraft input file.
+
+
+
+Instead, the sweep engine should:
+
+
+
+&#x20;   load the baseline aircraft input
+
+&#x20;   copy the input structure
+
+&#x20;   modify u\_0 in the copy
+
+&#x20;   run the analysis
+
+&#x20;   store the result
+
+&#x20;   move to the next sweep value
+
+
+\### G.4 Recommended first sweep range
+
+The first validation sweep should be conservative.
+
+Recommended nominal sweep:
+
+    -20% to +20% around the baseline value
+
+Recommended number of points:
+
+    9 or 11
+
+Example normalized sweep factors:
+
+    0.80
+    0.85
+    0.90
+    0.95
+    1.00
+    1.05
+    1.10
+    1.15
+    1.20
+
+The sweep must include the baseline value exactly.
+
+However, the `u_0` sweep must also respect the validity range of the aircraft-stability model.
+
+Hard upper limit:
+
+    M <= 0.9
+
+Therefore, the maximum allowed sweep speed is:
+
+    u_0_max = 0.9 * a
+
+where:
+
+    a = local speed of sound
+
+The speed of sound must be expressed in the same unit system as the swept `u_0` value.
+
+If the nominal +20% sweep exceeds `M = 0.9`, the sweep range must be clipped at the Mach-limit speed.
+
+The parametric-analysis system should issue a warning when clipping occurs.
+
+
+\### G.5 Branches affected
+
+
+
+`u\_0` affects:
+
+
+
+&#x20;   longitudinal analysis
+
+&#x20;   lateral/directional analysis
+
+
+
+Therefore, the first `u\_0` sweep should run both branches.
+
+
+
+\### G.6 Direct effects
+
+
+
+Changing `u\_0` directly affects:
+
+
+
+&#x20;   dynamic pressure
+
+&#x20;   dimensional force derivatives
+
+&#x20;   dimensional moment derivatives
+
+&#x20;   velocity-dependent A matrix terms
+
+&#x20;   time-scale of the dynamic response
+
+
+
+\### G.7 Indirect effects
+
+
+
+Changing `u\_0` indirectly affects:
+
+
+
+&#x20;   longitudinal eigenvalues
+
+&#x20;   lateral/directional eigenvalues
+
+&#x20;   damping ratios
+
+&#x20;   natural frequencies
+
+&#x20;   time constants
+
+&#x20;   stability-envelope metrics
+
+&#x20;   modal response plots
+
+
+
+\### G.8 Required tracked outputs
+
+
+
+The first `u\_0` sweep should track:
+
+
+
+&#x20;   swept u\_0 value in AVS units
+
+&#x20;   swept u\_0 value in SI units
+
+&#x20;   dynamic pressure if available
+
+&#x20;   existing longitudinal dimensional derivatives
+
+&#x20;   existing lateral/directional dimensional derivatives
+
+&#x20;   A\_long
+
+&#x20;   B\_long
+
+&#x20;   A\_lat
+
+&#x20;   B\_lat
+
+&#x20;   longitudinal eigenvalues
+
+&#x20;   lateral/directional eigenvalues
+
+&#x20;   short-period metrics
+
+&#x20;   phugoid metrics
+
+&#x20;   roll-mode metric
+
+&#x20;   spiral-mode metric
+
+&#x20;   Dutch-roll metrics
+
+&#x20;   max real longitudinal eigenvalue
+
+&#x20;   max real lateral eigenvalue
+
+&#x20;   longitudinal stability flag
+
+&#x20;   lateral/directional stability flag
+
+&#x20;   warnings
+
+
+
+\### G.9 First validation requirement
+
+
+
+At the baseline sweep point:
+
+
+
+&#x20;   u\_0 factor = 1.00
+
+
+
+the parametric result must match the normal combined-runner result within numerical tolerance.
+
+
+
+The comparison should include:
+
+
+
+&#x20;   output containers
+
+&#x20;   derivatives
+
+&#x20;   A/B matrices
+
+&#x20;   eigenvalues
+
+&#x20;   mode metrics
+
+&#x20;   stability flags
+
+
+
+Any mismatch at the baseline point must be explained before expanding the sweep system.
+
+
+
+\### G.10 First plots to generate
+
+
+
+The first `u\_0` parametric plots should be:
+
+
+
+&#x20;   max real longitudinal eigenvalue versus u\_0
+
+&#x20;   max real lateral/directional eigenvalue versus u\_0
+
+&#x20;   short-period damping ratio versus u\_0
+
+&#x20;   phugoid damping ratio versus u\_0
+
+&#x20;   Dutch-roll damping ratio versus u\_0
+
+&#x20;   eigenvalue/root-locus plot for longitudinal modes
+
+&#x20;   eigenvalue/root-locus plot for lateral/directional modes
+
+
+
+\### G.11 Risk level
+
+
+
+Risk level:
+
+
+
+&#x20;   Low to medium
+
+
+
+Reason:
+
+
+
+&#x20;   u\_0 is physically clear and directly sweepable, but it affects both analysis branches and many dimensionalized quantities. This makes it a useful but broader first backend test.
+
