@@ -178,8 +178,6 @@ This prevents geometry-sensitive parameters from being varied blindly.
 
 \---
 
-
-
 \## D. First Implementation Candidate
 
 
@@ -189,6 +187,112 @@ This prevents geometry-sensitive parameters from being varied blindly.
 
 
 Recommended first parameter:
+
+
+
+&#x20;   u\_0
+
+
+
+Reason:
+
+
+
+&#x20;   u\_0 has a clear physical interpretation as the trim/reference flight speed.
+
+&#x20;   u\_0 affects dynamic pressure.
+
+&#x20;   u\_0 affects dimensional force and moment derivatives.
+
+&#x20;   u\_0 affects velocity-dependent terms in the A matrices.
+
+&#x20;   u\_0 affects both longitudinal and lateral/directional dynamic behavior.
+
+&#x20;   u\_0 is useful for validating the full chain from flight condition variation to stability change.
+
+
+
+Expected chain:
+
+
+
+&#x20;   u\_0 changes
+
+&#x20;   -> dynamic pressure changes
+
+&#x20;   -> dimensional force and moment derivatives change
+
+&#x20;   -> A/B matrix velocity terms change
+
+&#x20;   -> longitudinal eigenvalues change
+
+&#x20;   -> lateral/directional eigenvalues change
+
+&#x20;   -> modal frequencies and damping ratios change
+
+&#x20;   -> stability-envelope metrics change
+
+
+
+Primary tracked outputs:
+
+
+
+&#x20;   qbar
+
+&#x20;   existing dimensional derivatives
+
+&#x20;   A\_long
+
+&#x20;   A\_lat
+
+&#x20;   B\_long
+
+&#x20;   B\_lat
+
+&#x20;   longitudinal eigenvalues
+
+&#x20;   lateral/directional eigenvalues
+
+&#x20;   short-period metrics
+
+&#x20;   phugoid metrics
+
+&#x20;   roll-mode metric
+
+&#x20;   spiral-mode metric
+
+&#x20;   Dutch-roll metrics
+
+&#x20;   max real longitudinal eigenvalue
+
+&#x20;   max real lateral eigenvalue
+
+&#x20;   stability flags
+
+
+
+Risk level:
+
+
+
+&#x20;   Low to medium
+
+
+
+Implementation note:
+
+
+
+&#x20;   u\_0 is broader than x\_cg because it affects both longitudinal and lateral/directional branches. This makes it a stronger first test of the general parametric-analysis backend, but it also means validation must check both branches.
+
+
+
+\### D.2 Alternative first parameter
+
+
+
+Alternative first parameter:
 
 
 
@@ -206,7 +310,7 @@ Reason:
 
 &#x20;   x\_cg mainly affects the longitudinal branch.
 
-&#x20;   x\_cg is useful for validating the full chain from input variation to stability change.
+&#x20;   x\_cg is useful for validating the longitudinal chain from center-of-gravity location to static and dynamic stability.
 
 
 
@@ -232,33 +336,37 @@ Expected chain:
 
 
 
-\### D.2 Alternative first parameter
+Primary tracked outputs:
 
 
 
-Alternative first parameter:
+&#x20;   static margin
+
+&#x20;   x\_NP
+
+&#x20;   Cm\_alpha
+
+&#x20;   trim elevator angle
+
+&#x20;   A\_long
+
+&#x20;   longitudinal eigenvalues
+
+&#x20;   short-period damping ratio
+
+&#x20;   phugoid damping ratio
+
+&#x20;   max real longitudinal eigenvalue
+
+&#x20;   longitudinal stability flag
 
 
 
-&#x20;   u\_0
+Risk level:
 
 
 
-Reason:
-
-
-
-&#x20;   u\_0 affects dynamic pressure, dimensionalization, A/B matrix terms, and modal behavior.
-
-
-
-Note:
-
-
-
-&#x20;   u\_0 affects both longitudinal and lateral/directional branches, so it is broader than x\_cg.
-
-
+&#x20;   Low
 
 \---
 
