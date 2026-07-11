@@ -736,6 +736,50 @@ Changing `u\_0` directly affects:
 
 &#x20;   time-scale of the dynamic response
 
+### G.6A Trim-consistent qbar and CL0 update
+
+The first `u_0` sweep should be treated as a trim-consistent speed sweep, not as an isolated speed-only sensitivity.
+
+For every accepted sweep point:
+
+    u_0 changes
+    rho remains fixed
+    W or m remains fixed
+    S remains fixed
+    qbar is recomputed
+    CL0 is recomputed
+
+The dynamic pressure should be recomputed as:
+
+    qbar = 0.5 * rho * u_0^2
+
+using a consistent unit system.
+
+In AVS form:
+
+    qbar_psf = 0.5 * rho_slugft3 * u0_fps^2
+
+The lift coefficient should be recomputed as:
+
+    CL0 = W / (qbar * S)
+
+using consistent force, dynamic-pressure, and area units.
+
+For the lateral/directional input structure, any active lift-coefficient aliases must also be updated.
+
+At minimum:
+
+    pAV.CL0 = updated CL0
+    pAV.CL  = updated CL0
+
+If the aircraft case contains a stored dynamic-pressure field such as:
+
+    qbar_psf
+
+then it should also be updated for reporting consistency.
+
+This update keeps the speed sweep closer to a physically retrimmed level-flight condition, while still using the existing validated stability-analysis cores.
+
 
 
 \### G.7 Indirect effects
@@ -779,6 +823,14 @@ The first `u\_0` sweep should track:
 &#x20;   existing longitudinal dimensional derivatives
 
 &#x20;   existing lateral/directional dimensional derivatives
+
+&#x20;   Mach Number
+
+&#x20;   Speed of Sound used for Mach calculation
+
+&#x20;   qbar
+
+&#x20;   CLO
 
 &#x20;   A\_long
 
