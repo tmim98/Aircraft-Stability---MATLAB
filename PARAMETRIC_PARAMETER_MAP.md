@@ -4,13 +4,13 @@
 
 This document defines which aircraft inputs are available for parametric analysis, how each input is varied, what dependent quantities must be recomputed, and which outputs should be tracked.
 
-This file supports the workflow defined in:
+The parameter map must be defined before generalized parametric-analysis code is written.
+
+The current implemented parametric-analysis variable is:
 
 ```text
-PARAMETRIC_ANALYSIS_WORKFLOW.pdf
+u_0
 ```
-
-The parameter map must be defined before generalized parametric-analysis code is written.
 
 ---
 
@@ -64,50 +64,141 @@ This prevents geometry-sensitive parameters from being varied blindly.
 
 ---
 
-## C. Parameter Map Table
+## C. Implementation Status
 
-| Parameter | Family | Branch | Sweepable | Policy needed | Priority | Risk |
-|---|---|---|---:|---:|---:|---:|
-| `u_0` | Flight condition | Both | Yes | No | 1 | Low |
-| `rho` | Flight condition | Both | Yes | No | 1 | Low |
-| `x_cg` | Longitudinal stability | Longitudinal | Yes | No | 1 | Low |
-| `x_ac` | Longitudinal geometry | Longitudinal | Yes | No | 2 | Low |
-| `CL0` | Aerodynamic input | Both | Yes | No | 2 | Medium |
-| `CL_alpha` | Aerodynamic input | Longitudinal | Yes | No | 1 | Low |
-| `C_Dalpha` | Aerodynamic input | Longitudinal | Yes | No | 2 | Low |
-| `CD0` | Aerodynamic input | Longitudinal | Yes | No | 2 | Low |
-| `eta` | Tail efficiency | Longitudinal | Yes | No | 1 | Low |
-| `St` | Horizontal-tail geometry | Longitudinal | Yes | Yes | 1 | Medium |
-| `lt` | Horizontal-tail geometry | Longitudinal | Yes | No | 1 | Low |
-| `S` | Wing geometry | Both | Yes | Yes | 2 | Medium |
-| `b` | Wing geometry | Lateral/directional | Yes | Yes | 2 | Medium |
-| `c_bar` | Wing geometry | Longitudinal | Yes | Yes | 2 | Medium |
-| `AR` | Wing geometry | Lateral/directional | Yes | Yes | 2 | Medium |
-| `Sv` | Vertical-tail geometry | Lateral/directional | Yes | Yes | 1 | Medium |
-| `lv` | Vertical-tail geometry | Lateral/directional | Yes | No | 1 | Low |
-| `bv` | Vertical-tail geometry | Lateral/directional | Yes | Yes | 3 | Medium |
-| `Gamma_w` | Wing geometry | Lateral/directional | Yes | No | 2 | Low |
-| `sweep_w` | Wing geometry | Lateral/directional | Yes | No | 2 | Low |
-| `TaperRatio` | Wing geometry | Lateral/directional | Yes | Yes | 3 | Medium |
-| `m` | Mass | Both | Yes | No | 2 | Low |
-| `Ix` | Inertia | Lateral/directional | Yes | No | 2 | Low |
-| `Iy` | Inertia | Longitudinal | Yes | No | 2 | Low |
-| `Iz` | Inertia | Lateral/directional | Yes | No | 2 | Low |
-| `Ixz` | Inertia | Lateral/directional | Yes | No | 3 | Medium |
+### C.1 Implemented parameter
 
----
-
-## D. First Implementation Candidate
-
-### D.1 Recommended first parameter
-
-Recommended first parameter:
+The first implemented parametric-analysis variable is:
 
 ```text
 u_0
 ```
 
-Reason:
+The implementation consists of:
+
+```text
+build_u0_sweep_values.m
+apply_parametric_variation.m
+run_parametric_sweep.m
+export_parametric_workbook.m
+plot_parametric_results.m
+run_parametric_analysis.m
+```
+
+The user-facing entry point is:
+
+```text
+run_parametric_analysis.m
+```
+
+### C.2 Implemented output path
+
+For each selected aircraft, the current `u_0` parametric-analysis output is saved under:
+
+```text
+results\<AIRCRAFT_CASE>\Parametric\u_0\
+```
+
+The output folder contains:
+
+```text
+u_0_parametric_summary.xlsx
+plots\
+```
+
+### C.3 Implemented `u_0` policy
+
+The implemented `u_0` sweep uses the following policy:
+
+1. Generate candidate `u_0` sweep values around the baseline speed.
+2. Enforce a hard Mach cap:
+
+```text
+M <= 0.9
+```
+
+3. Clip or remove values above the Mach cap.
+4. Keep `rho`, `S`, and mass/weight fixed during the sweep.
+5. Recompute dynamic pressure:
+
+```text
+qbar = 0.5*rho*u_0^2
+```
+
+6. Update `CL0` using baseline-preserving trim-consistent scaling:
+
+```text
+CL0_new = CL0_baseline * (qbar_baseline/qbar_new)
+```
+
+Equivalently, when `rho` and `S` are fixed:
+
+```text
+CL0_new = CL0_baseline * (u0_baseline/u0_new)^2
+```
+
+7. Synchronize lateral lift-coefficient aliases, including `CL0` and `CL` where present.
+8. Recompute Mach-derived speed derivatives when source fields exist:
+
+```text
+C_Lu  = M*CL_M
+C_Du  = M*CD_M
+C_m_u = M*Cm_M
+```
+
+### C.4 Implemented `u_0` validation status
+
+The `u_0` workflow was checked on both NAVION and B747.
+
+At the baseline sweep point, the parametric runner reproduced the normal `run_combined_AVS_analysis_FINAL.m` eigenvalues exactly for both:
+
+```text
+longitudinal branch
+lateral/directional branch
+```
+
+This means the implemented `u_0` workflow preserves the validated baseline analysis path.
+
+---
+
+## D. Parameter Map Table
+
+| Parameter | Family | Branch | Sweepable | Policy needed | Priority | Risk | Status |
+|---|---|---|---:|---:|---:|---:|---|
+| `u_0` | Flight condition | Both | Yes | No | 1 | Low | Implemented |
+| `rho` | Flight condition | Both | Yes | No | 1 | Low | Planned |
+| `x_cg` | Longitudinal stability | Longitudinal | Yes | No | 1 | Low | Planned |
+| `x_ac` | Longitudinal geometry | Longitudinal | Yes | No | 2 | Low | Planned |
+| `CL0` | Aerodynamic input | Both | Yes | No | 2 | Medium | Planned |
+| `CL_alpha` | Aerodynamic input | Longitudinal | Yes | No | 1 | Low | Planned |
+| `C_Dalpha` | Aerodynamic input | Longitudinal | Yes | No | 2 | Low | Planned |
+| `CD0` | Aerodynamic input | Longitudinal | Yes | No | 2 | Low | Planned |
+| `eta` | Tail efficiency | Longitudinal | Yes | No | 1 | Low | Planned |
+| `St` | Horizontal-tail geometry | Longitudinal | Yes | Yes | 1 | Medium | Planned |
+| `lt` | Horizontal-tail geometry | Longitudinal | Yes | No | 1 | Low | Planned |
+| `S` | Wing geometry | Both | Yes | Yes | 2 | Medium | Planned |
+| `b` | Wing geometry | Lateral/directional | Yes | Yes | 2 | Medium | Planned |
+| `c_bar` | Wing geometry | Longitudinal | Yes | Yes | 2 | Medium | Planned |
+| `AR` | Wing geometry | Lateral/directional | Yes | Yes | 2 | Medium | Planned |
+| `Sv` | Vertical-tail geometry | Lateral/directional | Yes | Yes | 1 | Medium | Planned |
+| `lv` | Vertical-tail geometry | Lateral/directional | Yes | No | 1 | Low | Planned |
+| `bv` | Vertical-tail geometry | Lateral/directional | Yes | Yes | 3 | Medium | Planned |
+| `Gamma_w` | Wing geometry | Lateral/directional | Yes | No | 2 | Low | Planned |
+| `sweep_w` | Wing geometry | Lateral/directional | Yes | No | 2 | Low | Planned |
+| `TaperRatio` | Wing geometry | Lateral/directional | Yes | Yes | 3 | Medium | Planned |
+| `m` | Mass | Both | Yes | No | 2 | Low | Planned |
+| `Ix` | Inertia | Lateral/directional | Yes | No | 2 | Low | Planned |
+| `Iy` | Inertia | Longitudinal | Yes | No | 2 | Low | Planned |
+| `Iz` | Inertia | Lateral/directional | Yes | No | 2 | Low | Planned |
+| `Ixz` | Inertia | Lateral/directional | Yes | No | 3 | Medium | Planned |
+
+---
+
+## E. Implemented First Parameter: `u_0`
+
+### E.1 Reason for choosing `u_0`
+
+`u_0` was selected as the first implemented parameter because:
 
 ```text
 u_0 has a clear physical interpretation as the trim/reference flight speed.
@@ -115,14 +206,17 @@ u_0 affects dynamic pressure.
 u_0 affects dimensional force and moment derivatives.
 u_0 affects velocity-dependent terms in the A matrices.
 u_0 affects both longitudinal and lateral/directional dynamic behavior.
-u_0 is useful for validating the full chain from flight condition variation to stability change.
+u_0 is useful for validating the full chain from flight-condition variation to stability change.
 ```
 
-Expected chain:
+### E.2 Expected chain
 
 ```text
 u_0 changes
 -> dynamic pressure changes
+-> CL0 changes through baseline-preserving trim scaling
+-> Mach number changes
+-> Mach-derived speed derivatives may change
 -> dimensional force and moment derivatives change
 -> A/B matrix velocity terms change
 -> longitudinal eigenvalues change
@@ -131,10 +225,13 @@ u_0 changes
 -> stability-envelope metrics change
 ```
 
-Primary tracked outputs:
+### E.3 Primary tracked outputs
 
 ```text
+u_0
+Mach
 qbar
+CL0
 existing dimensional derivatives
 A_long
 A_lat
@@ -150,23 +247,29 @@ Dutch-roll metrics
 max real longitudinal eigenvalue
 max real lateral eigenvalue
 stability flags
+warnings
 ```
 
-Risk level:
+### E.4 Output plots
+
+The implemented `u_0` workflow generates:
 
 ```text
-Low to medium
+u_0_CL0_qbar.png
+u_0_stability_envelope.png
+u_0_longitudinal_eigenvalues.png
+u_0_lateral_eigenvalues.png
+u_0_A_long_sensitivity.png
+u_0_A_lat_sensitivity.png
 ```
 
-Implementation note:
+The A-matrix sensitivity heatmaps display the maximum absolute percent change from the baseline matrix entry over the sweep. `NaN` means the percent change is undefined, usually because the baseline matrix entry is zero.
 
-```text
-u_0 is broader than x_cg because it affects both longitudinal and lateral/directional branches. This makes it a stronger first test of the general parametric-analysis backend, but it also means validation must check both branches.
-```
+---
 
-### D.2 Alternative first parameter
+## F. Alternative First Parameter / Next Candidate: `x_cg`
 
-Alternative first parameter:
+The next likely parameter is:
 
 ```text
 x_cg
@@ -217,9 +320,9 @@ Low
 
 ---
 
-## E. Geometry Policies
+## G. Geometry Policies
 
-### E.1 `S` policy
+### G.1 `S` policy
 
 If `S` is swept:
 
@@ -229,7 +332,7 @@ hold c_bar fixed unless otherwise specified
 recompute AR = b^2/S
 ```
 
-### E.2 `b` policy
+### G.2 `b` policy
 
 If `b` is swept:
 
@@ -238,7 +341,7 @@ hold S fixed unless otherwise specified
 recompute AR = b^2/S
 ```
 
-### E.3 `c_bar` policy
+### G.3 `c_bar` policy
 
 If `c_bar` is swept:
 
@@ -248,7 +351,7 @@ hold b fixed unless otherwise specified
 recompute only quantities that explicitly depend on c_bar
 ```
 
-### E.4 `AR` policy
+### G.4 `AR` policy
 
 If `AR` is swept, define whether `S` or `b` is held fixed before implementation.
 
@@ -268,7 +371,7 @@ recompute S = b^2/AR
 
 The selected policy must be stated before `AR` is used in a sweep.
 
-### E.5 `Sv` policy
+### G.5 `Sv` policy
 
 If `Sv` is swept:
 
@@ -277,7 +380,7 @@ hold bv fixed unless otherwise specified
 recompute AR_v = bv^2/Sv if AR_v is used
 ```
 
-### E.6 `bv` policy
+### G.6 `bv` policy
 
 If `bv` is swept:
 
@@ -286,7 +389,7 @@ hold Sv fixed unless otherwise specified
 recompute AR_v = bv^2/Sv if AR_v is used
 ```
 
-### E.7 `St` policy
+### G.7 `St` policy
 
 If `St` is swept:
 
@@ -295,7 +398,7 @@ hold selected horizontal-tail reference dimensions fixed unless otherwise specif
 recompute AR_t if the required geometry is available
 ```
 
-### E.8 `TaperRatio` policy
+### G.8 `TaperRatio` policy
 
 If `TaperRatio` is swept:
 
@@ -303,5 +406,3 @@ If `TaperRatio` is swept:
 keep the selected wing reference area and span policy fixed
 recompute any correction factors or interpolated quantities that depend on taper ratio
 ```
-
----
