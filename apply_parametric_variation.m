@@ -166,7 +166,7 @@ eta = local_first_finite([ ...
     local_get_numeric_field(lat_base, 'eta')]);
 if ~isfinite(eta)
     eta = 1.0;
-    warnings{end+1} = 'eta was missing; x_cg Cm_alpha update used eta = 1.0.'; %#ok<AGROW>
+    warnings{end+1} = 'eta was missing; x_cg Cm_alpha update used eta = 1.0.';
 end
 
 dEdalpha = local_first_finite([ ...
@@ -174,7 +174,7 @@ dEdalpha = local_first_finite([ ...
     local_get_numeric_field(lat_base, 'dEdalpha')]);
 if ~isfinite(dEdalpha)
     dEdalpha = 0.0;
-    warnings{end+1} = 'dEdalpha was missing; x_cg Cm_alpha update used dEdalpha = 0.0.'; %#ok<AGROW>
+    warnings{end+1} = 'dEdalpha was missing; x_cg Cm_alpha update used dEdalpha = 0.0.';
 end
 
 if ~isfinite(CL_alpha_w)
@@ -189,7 +189,7 @@ if isfinite(new_V_H) && isfinite(baseline_V_H) && isfinite(CL_alpha_t)
     tail_increment_Cm_alpha = -eta * (new_V_H - baseline_V_H) * CL_alpha_t * (1.0 - dEdalpha);
 else
     warnings{end+1} = ...
-        'Tail-volume contribution to Cm_alpha was not updated because V_H or CL_alpha_t could not be determined.'; %#ok<AGROW>
+        'Tail-volume contribution to Cm_alpha was not updated because V_H or CL_alpha_t could not be determined.';
 end
 
 new_Cm_alpha = baseline_Cm_alpha + cg_increment_Cm_alpha + tail_increment_Cm_alpha;
@@ -276,16 +276,13 @@ if new_mach > mach_cap + tol
         new_u0_kt, new_mach, mach_cap);
 end
 
-long_var = long_base;
-lat_var = lat_base;
-
 long_info = local_update_one_u0_struct(long_base, new_u0_kt, new_mach, KT2FTPS, 'longitudinal');
 lat_info  = local_update_one_u0_struct(lat_base,  new_u0_kt, new_mach, KT2FTPS, 'lateral_directional');
 
 long_var = long_info.pAV;
 lat_var = lat_info.pAV;
 
-warnings = [warnings, long_info.warnings, lat_info.warnings]; %#ok<AGROW>
+warnings = [warnings, long_info.warnings, lat_info.warnings];
 
 info = struct();
 info.parameter_name = 'u_0';
@@ -315,7 +312,7 @@ if isfinite(baseline_CL0) && isfinite(baseline_qbar_psf) && isfinite(new_qbar_ps
     new_CL0 = baseline_CL0 * (baseline_qbar_psf / new_qbar_psf);
 else
     warnings{end+1} = sprintf( ...
-        '%s: CL0 was not updated because baseline CL0 or qbar could not be determined.', branch_name); %#ok<AGROW>
+        '%s: CL0 was not updated because baseline CL0 or qbar could not be determined.', branch_name);
 end
 
 % Update speed fields that already exist.

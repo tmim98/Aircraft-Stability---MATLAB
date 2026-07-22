@@ -87,7 +87,7 @@ if any(requested_mach > mach_cap + tol)
         warnings{end+1} = sprintf( ...
             ['Requested u_0 sweep exceeded Mach %.3f. Values above %.6g knots ', ...
              'were clipped to the Mach cap.'], ...
-            mach_cap, u0_cap_kt); %#ok<AGROW>
+            mach_cap, u0_cap_kt);
     else
         error('build_u0_sweep_values:MachCapExceeded', ...
             'Requested u_0 sweep exceeds Mach %.3f and clipping is disabled.', mach_cap);
@@ -102,7 +102,7 @@ accepted_mach = accepted_u0_kt ./ speed_of_sound_kt;
 if numel(accepted_u0_kt) < numel(requested_u0_kt)
     warnings{end+1} = sprintf( ...
         'Duplicate clipped u_0 values were removed. Requested points: %d. Accepted points: %d.', ...
-        numel(requested_u0_kt), numel(accepted_u0_kt)); %#ok<AGROW>
+        numel(requested_u0_kt), numel(accepted_u0_kt));
 end
 
 % Ensure the exact baseline speed is present. The default factors include 1.00,
@@ -112,12 +112,12 @@ if ~any(abs(accepted_u0_kt - baseline_u0_kt) <= max(tol, tol*baseline_u0_kt))
     accepted_u0_kt = sort(accepted_u0_kt);
     accepted_factors = accepted_u0_kt ./ baseline_u0_kt;
     accepted_mach = accepted_u0_kt ./ speed_of_sound_kt;
-    warnings{end+1} = 'Baseline u_0 was not in the requested sweep and was added automatically.'; %#ok<AGROW>
+    warnings{end+1} = 'Baseline u_0 was not in the requested sweep and was added automatically.';
 end
 
 if baseline_u0_kt > u0_cap_kt + tol
     warnings{end+1} = sprintf( ...
-        'Baseline u_0 itself exceeds the Mach %.3f cap. Check the aircraft case inputs.', mach_cap); %#ok<AGROW>
+        'Baseline u_0 itself exceeds the Mach %.3f cap. Check the aircraft case inputs.', mach_cap);
 end
 
 sweep = struct();

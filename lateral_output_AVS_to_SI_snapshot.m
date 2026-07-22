@@ -239,7 +239,7 @@ function s = local_set_dot_path_parts(s, parts, value)
 
 field_name = parts{1};
 
-if numel(parts) == 1
+if isscalar(parts)
     s.(field_name) = value;
     return;
 end
@@ -269,7 +269,7 @@ if ~isstruct(s) || ~isscalar(s) || ~isfield(s, field_name)
     return;
 end
 
-if numel(parts) == 1
+if isscalar(parts)
     s = rmfield(s, field_name);
     return;
 end

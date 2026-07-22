@@ -97,7 +97,7 @@ if any(below_limit) || any(above_limit)
         warnings{end+1} = sprintf( ...
             ['Requested x_cg sweep exceeded the safety limits %.3f <= cg_mac <= %.3f. ', ...
              'Out-of-range values were clipped.'], ...
-            min_cg_mac, max_cg_mac); %#ok<AGROW>
+            min_cg_mac, max_cg_mac);
     else
         error('build_xcg_sweep_values:SafetyLimitExceeded', ...
             'Requested x_cg sweep exceeds the safety limits and clipping is disabled.');
@@ -110,14 +110,14 @@ end
 if numel(accepted_cg_mac) < numel(requested_cg_mac)
     warnings{end+1} = sprintf( ...
         'Duplicate clipped x_cg values were removed. Requested points: %d. Accepted points: %d.', ...
-        numel(requested_cg_mac), numel(accepted_cg_mac)); %#ok<AGROW>
+        numel(requested_cg_mac), numel(accepted_cg_mac));
 end
 
 % Ensure the exact baseline CG is present.
 if ~any(abs(accepted_cg_mac - baseline_cg_mac) <= max(tol, tol*abs(baseline_cg_mac)))
     accepted_cg_mac(end+1) = baseline_cg_mac;
     accepted_cg_mac = sort(accepted_cg_mac);
-    warnings{end+1} = 'Baseline cg_mac was not in the requested sweep and was added automatically.'; %#ok<AGROW>
+    warnings{end+1} = 'Baseline cg_mac was not in the requested sweep and was added automatically.';
 end
 
 requested_x_cg_ft = requested_cg_mac .* c_bar_ft;

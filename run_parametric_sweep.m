@@ -299,7 +299,7 @@ for k = 1:n
             catch ME_long
                 case_status = 'partial_failure';
                 param_out.failures(end+1) = local_make_failure(k, sweep.parameter_name, current_value, ...
-                    'longitudinal', ME_long); %#ok<AGROW>
+                    'longitudinal', ME_long);
                 if ~continue_on_error
                     rethrow(ME_long);
                 end
@@ -336,7 +336,7 @@ for k = 1:n
             catch ME_lat
                 case_status = 'partial_failure';
                 param_out.failures(end+1) = local_make_failure(k, sweep.parameter_name, current_value, ...
-                    'lateral_directional', ME_lat); %#ok<AGROW>
+                    'lateral_directional', ME_lat);
                 if ~continue_on_error
                     rethrow(ME_lat);
                 end
@@ -346,7 +346,7 @@ for k = 1:n
     catch ME_apply
         case_status = 'failed';
         param_out.failures(end+1) = local_make_failure(k, sweep.parameter_name, current_value, ...
-            'variation_helper', ME_apply); %#ok<AGROW>
+            'variation_helper', ME_apply);
         if ~continue_on_error
             rethrow(ME_apply);
         end

@@ -47,7 +47,6 @@ figure_visible = local_get_option(options, 'figure_visible', 'off');
 image_format = local_get_option(options, 'image_format', 'png');
 close_figures = local_get_option(options, 'close_figures', true);
 
-plot_files = {};
 summary = local_get_summary(param_out);
 if isempty(summary) || height(summary) < 1
     error('plot_parametric_results:MissingSummary', ...
@@ -76,7 +75,7 @@ plot_files = {};
 % 1. Dynamic stability envelope.
 fig = local_dynamic_stability_figure(summary, x, x_label, ...
     'Parametric Stability Envelope for u_0 Sweep', figure_visible, true);
-plot_files{end+1,1} = local_save_figure(fig, output_folder, [file_prefix '_stability_envelope'], image_format, close_figures); %#ok<AGROW>
+plot_files{end+1,1} = local_save_figure(fig, output_folder, [file_prefix '_stability_envelope'], image_format, close_figures);
 
 % 2. CL0 and qbar.
 fig = figure('Visible', figure_visible, 'Name', 'Parametric CL0 and qbar');
@@ -107,34 +106,34 @@ xlabel(x_label);
 ylabel('qbar [psf]');
 title('Dynamic Pressure Scaling');
 legend('Location', 'best');
-plot_files{end+1,1} = local_save_figure(fig, output_folder, [file_prefix '_CL0_qbar'], image_format, close_figures); %#ok<AGROW>
+plot_files{end+1,1} = local_save_figure(fig, output_folder, [file_prefix '_CL0_qbar'], image_format, close_figures);
 
 % 3. Longitudinal eigenvalue root-locus-style plot.
 E_long = local_get_eigen_matrix(param_out, 'longitudinal');
 if ~isempty(E_long)
     fig = local_eigenvalue_figure(E_long, summary, 'Longitudinal Eigenvalue Movement', figure_visible, 'longitudinal');
-    plot_files{end+1,1} = local_save_figure(fig, output_folder, [file_prefix '_longitudinal_eigenvalues'], image_format, close_figures); %#ok<AGROW>
+    plot_files{end+1,1} = local_save_figure(fig, output_folder, [file_prefix '_longitudinal_eigenvalues'], image_format, close_figures);
 end
 
 % 4. Lateral eigenvalue root-locus-style plot.
 E_lat = local_get_eigen_matrix(param_out, 'lateral_directional');
 if ~isempty(E_lat)
     fig = local_eigenvalue_figure(E_lat, summary, 'Lateral/Directional Eigenvalue Movement', figure_visible, 'lateral_directional');
-    plot_files{end+1,1} = local_save_figure(fig, output_folder, [file_prefix '_lateral_eigenvalues'], image_format, close_figures); %#ok<AGROW>
+    plot_files{end+1,1} = local_save_figure(fig, output_folder, [file_prefix '_lateral_eigenvalues'], image_format, close_figures);
 end
 
 % 5. Longitudinal A matrix sensitivity.
 A_long = local_get_matrix(param_out, 'longitudinal', 'A');
 if ~isempty(A_long)
     fig = local_matrix_sensitivity_figure(A_long, param_out, summary, 'Longitudinal A-Matrix Sensitivity', figure_visible);
-    plot_files{end+1,1} = local_save_figure(fig, output_folder, [file_prefix '_A_long_sensitivity'], image_format, close_figures); %#ok<AGROW>
+    plot_files{end+1,1} = local_save_figure(fig, output_folder, [file_prefix '_A_long_sensitivity'], image_format, close_figures);
 end
 
 % 6. Lateral A matrix sensitivity.
 A_lat = local_get_matrix(param_out, 'lateral_directional', 'A');
 if ~isempty(A_lat)
     fig = local_matrix_sensitivity_figure(A_lat, param_out, summary, 'Lateral/Directional A-Matrix Sensitivity', figure_visible);
-    plot_files{end+1,1} = local_save_figure(fig, output_folder, [file_prefix '_A_lat_sensitivity'], image_format, close_figures); %#ok<AGROW>
+    plot_files{end+1,1} = local_save_figure(fig, output_folder, [file_prefix '_A_lat_sensitivity'], image_format, close_figures);
 end
 end
 
@@ -158,7 +157,7 @@ xlabel(x_label);
 ylabel('Static margin [-]');
 title('x_{cg} Static-Stability Envelope');
 legend('Location', 'best');
-plot_files{end+1,1} = local_save_figure(fig, output_folder, [file_prefix '_static_stability_envelope'], image_format, close_figures); %#ok<AGROW>
+plot_files{end+1,1} = local_save_figure(fig, output_folder, [file_prefix '_static_stability_envelope'], image_format, close_figures);
 
 % 2. Cm_alpha and dCm/dCL plot.
 fig = figure('Visible', figure_visible, 'Name', 'x_cg Cm_alpha and dCm/dCL');
@@ -187,12 +186,12 @@ xlabel(x_label);
 ylabel('dC_m/dC_L [-]');
 title('Primary Static-Stability Slope');
 legend('Location', 'best');
-plot_files{end+1,1} = local_save_figure(fig, output_folder, [file_prefix '_Cm_alpha_dCm_dCL'], image_format, close_figures); %#ok<AGROW>
+plot_files{end+1,1} = local_save_figure(fig, output_folder, [file_prefix '_Cm_alpha_dCm_dCL'], image_format, close_figures);
 
 % 3. Dynamic stability envelope.
 fig = local_dynamic_stability_figure(summary, x, x_label, ...
     'x_{cg} Dynamic Stability Envelope', figure_visible, false);
-plot_files{end+1,1} = local_save_figure(fig, output_folder, [file_prefix '_stability_envelope'], image_format, close_figures); %#ok<AGROW>
+plot_files{end+1,1} = local_save_figure(fig, output_folder, [file_prefix '_stability_envelope'], image_format, close_figures);
 
 % 4. Longitudinal eigenvalue map.
 % For x_cg, eigenvalues can change mode type near the static-stability
@@ -202,14 +201,14 @@ E_long = local_get_eigen_matrix(param_out, 'longitudinal');
 if ~isempty(E_long)
     fig = local_xcg_longitudinal_eigenvalue_figure(E_long, summary, ...
         'Longitudinal Eigenvalue Map During x_{cg} Sweep', figure_visible);
-    plot_files{end+1,1} = local_save_figure(fig, output_folder, [file_prefix '_longitudinal_eigenvalues'], image_format, close_figures); %#ok<AGROW>
+    plot_files{end+1,1} = local_save_figure(fig, output_folder, [file_prefix '_longitudinal_eigenvalues'], image_format, close_figures);
 end
 
 % 5. Longitudinal A matrix sensitivity.
 A_long = local_get_matrix(param_out, 'longitudinal', 'A');
 if ~isempty(A_long)
     fig = local_matrix_sensitivity_figure(A_long, param_out, summary, 'Longitudinal A-Matrix Sensitivity', figure_visible);
-    plot_files{end+1,1} = local_save_figure(fig, output_folder, [file_prefix '_A_long_sensitivity'], image_format, close_figures); %#ok<AGROW>
+    plot_files{end+1,1} = local_save_figure(fig, output_folder, [file_prefix '_A_long_sensitivity'], image_format, close_figures);
 end
 end
 
@@ -479,8 +478,8 @@ switch branch_name
             short_idx = order(1);
             phugoid_idx = order(end);
 
-            plot_groups(end+1) = local_make_group(pairs{short_idx}, 'Short-period'); %#ok<AGROW>
-            plot_groups(end+1) = local_make_group(pairs{phugoid_idx}, 'Phugoid'); %#ok<AGROW>
+            plot_groups(end+1) = local_make_group(pairs{short_idx}, 'Short-period');
+            plot_groups(end+1) = local_make_group(pairs{phugoid_idx}, 'Phugoid');
 
             for k = 1:numel(pairs)
                 if k ~= short_idx && k ~= phugoid_idx
@@ -508,9 +507,9 @@ switch branch_name
             roll_mode = real_modes(order(1));
             spiral_mode = real_modes(order(end));
 
-            plot_groups(end+1) = local_make_group(roll_mode, 'Roll mode'); %#ok<AGROW>
+            plot_groups(end+1) = local_make_group(roll_mode, 'Roll mode');
             if spiral_mode ~= roll_mode
-                plot_groups(end+1) = local_make_group(spiral_mode, 'Spiral mode'); %#ok<AGROW>
+                plot_groups(end+1) = local_make_group(spiral_mode, 'Spiral mode');
             end
 
             for k = 1:numel(real_modes)
@@ -533,7 +532,7 @@ end
 
 function group = local_make_group(modes, mode_name)
 modes = modes(:).';
-if numel(modes) == 1
+if isscalar(modes)
     label = sprintf('%s (eig %d)', mode_name, modes(1));
 else
     label = sprintf('%s (eig %s)', mode_name, strjoin(arrayfun(@num2str, modes, 'UniformOutput', false), ','));
@@ -686,7 +685,6 @@ end
 end
 
 function text_value = local_get_nested_text(s, path_parts, default_value)
-value = [];
 current = s;
 for k = 1:numel(path_parts)
     if isstruct(current) && isfield(current, path_parts{k})

@@ -91,10 +91,10 @@ end
 function T = local_sweep_table(param_out)
 rows = {};
 if isfield(param_out, 'meta') && isstruct(param_out.meta)
-    rows = [rows; local_struct_rows(param_out.meta, 'meta')]; %#ok<AGROW>
+    rows = [rows; local_struct_rows(param_out.meta, 'meta')];
 end
 if isfield(param_out, 'sweep') && isstruct(param_out.sweep)
-    rows = [rows; local_struct_rows(param_out.sweep, 'sweep')]; %#ok<AGROW>
+    rows = [rows; local_struct_rows(param_out.sweep, 'sweep')];
 end
 if isempty(rows)
     rows = {'none','none','No sweep metadata found.'};
@@ -105,7 +105,7 @@ end
 function T = local_baseline_table(param_out)
 rows = {};
 if isfield(param_out, 'baseline') && isstruct(param_out.baseline)
-    rows = [rows; local_struct_rows(param_out.baseline, 'baseline')]; %#ok<AGROW>
+    rows = [rows; local_struct_rows(param_out.baseline, 'baseline')];
 end
 if isempty(rows)
     rows = {'none','none','No baseline metadata found.'};
@@ -116,7 +116,7 @@ end
 function T = local_static_stability_table(param_out)
 rows = {};
 if isfield(param_out, 'static_stability') && isstruct(param_out.static_stability)
-    rows = [rows; local_struct_rows(param_out.static_stability, 'static_stability')]; %#ok<AGROW>
+    rows = [rows; local_struct_rows(param_out.static_stability, 'static_stability')];
 end
 
 summary = local_get_summary(param_out);
@@ -201,7 +201,8 @@ abs_value = [];
 [eig_matrix, branch_label] = local_get_eigen_matrix(param_out, branch_name);
 summary = local_get_summary(param_out);
 
-if isempty(eig_matrix)
+finite_eig_mask = isfinite(real(eig_matrix(:))) & isfinite(imag(eig_matrix(:)));
+if isempty(eig_matrix) || ~any(finite_eig_mask)
     T = table({'No eigenvalue data found.'}, 'VariableNames', {'Message'});
     return;
 end
@@ -425,7 +426,8 @@ switch branch_name
             label = 'lateral_directional';
         end
 end
-if ~isempty(E) && ~any(isfinite(real(E(:))) | isfinite(imag(E(:))))
+finite_eig_mask = isfinite(real(E(:))) & isfinite(imag(E(:)));
+if ~isempty(E) && ~any(finite_eig_mask)
     E = [];
 end
 end
