@@ -52,7 +52,14 @@ results\B747
 
 ## IMPORTANT — HOW TO RUN PARAMETRIC ANALYSIS
 
-To run the currently implemented parametric-analysis workflow, run:
+The implemented parametric-analysis backend currently supports these one-dimensional sweep variables:
+
+```text
+u_0
+x_cg / cg_mac
+```
+
+The user-facing entry script is:
 
 ```text
 run_parametric_analysis.m
@@ -64,15 +71,9 @@ This script calls the standard combined runner:
 run_combined_AVS_analysis_FINAL.m
 ```
 
-Then it runs the currently implemented parametric sweep:
+and then runs the default implemented parametric workflow. At this stage, the scripted entry workflow is still centered on the `u_0` sweep.
 
-```text
-u_0
-```
-
-At this stage, `u_0` is the only fully implemented parametric-analysis variable.
-
-The parametric-analysis workflow automatically calls:
+The shared parametric-analysis backend is:
 
 ```text
 run_parametric_sweep.m
@@ -80,10 +81,24 @@ export_parametric_workbook.m
 plot_parametric_results.m
 ```
 
-The generated parametric-analysis outputs are saved under:
+To run the implemented `x_cg` sweep directly, run the standard combined runner first, select the aircraft case, and then call:
+
+```matlab
+param_out = run_parametric_sweep(long_pAV, lat_pAV, 'x_cg');
+
+workbook_file = export_parametric_workbook( ...
+    param_out, ...
+    'x_cg_parametric_summary.xlsx');
+
+plot_files = plot_parametric_results( ...
+    param_out, ...
+    'x_cg_plots');
+```
+
+Generated parametric-analysis outputs are normally saved under:
 
 ```text
-results\<AIRCRAFT_CASE>\Parametric\u_0\
+results\<AIRCRAFT_CASE>\Parametric\<PARAMETER_NAME>\
 ```
 
 For example:
@@ -91,16 +106,11 @@ For example:
 ```text
 results\NAVION\Parametric\u_0\
 results\B747\Parametric\u_0\
+results\NAVION\Parametric\x_cg\
+results\B747\Parametric\x_cg\
 ```
 
-The parametric output folder contains:
-
-```text
-u_0_parametric_summary.xlsx
-plots\
-```
-
-The plot folder contains files such as:
+The `u_0` plot folder contains files such as:
 
 ```text
 u_0_CL0_qbar.png
@@ -111,13 +121,30 @@ u_0_A_long_sensitivity.png
 u_0_A_lat_sensitivity.png
 ```
 
+The `x_cg` plot folder contains files such as:
+
+```text
+x_cg_static_stability_envelope.png
+x_cg_Cm_alpha_dCm_dCL.png
+x_cg_stability_envelope.png
+x_cg_longitudinal_eigenvalues.png
+x_cg_A_long_sensitivity.png
+```
+
 Generated parametric-analysis results are output artifacts. They should not normally be committed to the repository unless example outputs are intentionally being versioned.
 
 ---
 
 ## CURRENT PARAMETRIC-ANALYSIS STATUS
 
-The implemented parametric-analysis workflow is currently limited to one-dimensional `u_0` sweeps.
+The implemented parametric-analysis backend currently supports one-dimensional sweeps for:
+
+```text
+u_0
+x_cg / cg_mac
+```
+
+### `u_0` policy
 
 The `u_0` sweep uses the following policy:
 
@@ -158,6 +185,54 @@ C_m_u = M*Cm_M
 
 The `u_0` implementation has been checked on both NAVION and B747. At the baseline sweep point, the parametric runner reproduces the normal combined-runner eigenvalues exactly for both longitudinal and lateral/directional branches.
 
+### `x_cg / cg_mac` policy
+
+The `x_cg` sweep uses the normalized center-of-gravity position as the sweep variable:
+
+```text
+cg_mac = x_cg/c_bar
+```
+
+Default sweep range:
+
+```text
+baseline cg_mac ± 0.20
+```
+
+Safety limits:
+
+```text
+0.05 <= cg_mac <= 0.60
+```
+
+The `x_cg` sweep is currently a longitudinal-only parametric workflow. Lateral/reference `x_cg` aliases are synchronized for consistency, but the lateral/directional branch is not rerun by default.
+
+The accepted `x_cg` policy preserves the baseline horizontal-tail reference station:
+
+```text
+x_tail_ref = x_cg_baseline + lt_baseline
+lt_new     = x_tail_ref - x_cg_new
+```
+
+Then the horizontal-tail volume ratio is recomputed:
+
+```text
+V_H = lt*St/(S*c_bar)
+```
+
+Because the standard longitudinal core gives direct `Cm_alpha` input values priority when they exist, the parametric helper updates `Cm_alpha` with a baseline-preserving incremental relation. This makes the `x_cg` sweep affect both static and dynamic longitudinal behavior without discarding the validated baseline derivative.
+
+Static stability is tracked by two methods:
+
+```text
+Primary method:   Cm_alpha / dCm_dCL
+Secondary method: neutral-point static margin
+```
+
+If the two methods disagree, both are shown and the disagreement is flagged. The primary static-stability classification is not hidden.
+
+The `x_cg` implementation estimates critical CG locations when a zero crossing exists inside the accepted sweep range.
+
 ---
 
 ## REQUIRED PROJECT FOLDER STRUCTURE
@@ -171,6 +246,7 @@ Aircraft Stability\
     run_parametric_sweep.m
     apply_parametric_variation.m
     build_u0_sweep_values.m
+    build_xcg_sweep_values.m
     export_parametric_workbook.m
     plot_parametric_results.m
     AVS_to_SI.m
@@ -199,6 +275,9 @@ Aircraft Stability\
                 u_0\
                     u_0_parametric_summary.xlsx
                     plots\
+                x_cg\
+                    x_cg_parametric_summary.xlsx
+                    plots\
 
         B747\
             combined_stability_report.txt
@@ -207,6 +286,9 @@ Aircraft Stability\
             Parametric\
                 u_0\
                     u_0_parametric_summary.xlsx
+                    plots\
+                x_cg\
+                    x_cg_parametric_summary.xlsx
                     plots\
 
     BackUp_Obsolete\
@@ -305,34 +387,41 @@ Dutch roll
 
 ## WHAT THE PARAMETRIC RUNNER CREATES
 
-For each selected aircraft, `run_parametric_analysis.m` creates or updates:
+For each selected aircraft, the parametric backend creates or updates parameter-specific output folders such as:
 
 ```text
 results\<AIRCRAFT_CASE>\Parametric\u_0\u_0_parametric_summary.xlsx
 results\<AIRCRAFT_CASE>\Parametric\u_0\plots\
+
+results\<AIRCRAFT_CASE>\Parametric\x_cg\x_cg_parametric_summary.xlsx
+results\<AIRCRAFT_CASE>\Parametric\x_cg\plots\
 ```
 
 The parametric workbook contains sheets such as:
 
 ```text
 Summary
-Sweep_Info
+Sweep_Definition
+Baseline
 Warnings
+Failures
 Longitudinal_Eigenvalues
-Lateral_Eigenvalues
 A_Long_Entries
-A_Lat_Entries
+B_Long_Entries
+Longitudinal_Nondim
+Longitudinal_Dimensional
 ```
 
-The parametric plots show:
+For `u_0`, the workbook and plots may also include lateral/directional eigenvalues and lateral/directional matrix entries because `u_0` affects both branches.
+
+For `x_cg`, the workflow is currently longitudinal-only, so the useful plots are:
 
 ```text
-CL0 and qbar variation with u_0
-max(real(lambda)) stability envelope
+static-stability envelope
+Cm_alpha and dCm/dCL versus cg_mac
+dynamic stability envelope
 longitudinal eigenvalue movement in the complex plane
-lateral/directional eigenvalue movement in the complex plane
 longitudinal A-matrix sensitivity heatmap
-lateral/directional A-matrix sensitivity heatmap
 ```
 
 In the A-matrix sensitivity heatmaps, the displayed numbers are maximum absolute percent changes from the baseline matrix entry over the sweep. `NaN` means the percent change is undefined, usually because the baseline matrix entry is zero.
@@ -394,7 +483,7 @@ If the Excel export is created, its path is stored in:
 combined_xlsx_file
 ```
 
-After `run_parametric_analysis.m` finishes, the parametric output structure is stored as:
+After `run_parametric_analysis.m` or a direct `run_parametric_sweep.m` call finishes, the parametric output structure is stored as:
 
 ```text
 param_out
@@ -607,27 +696,36 @@ After running, check:
 Before running parametric analysis, check:
 
 1. You are on the intended development branch if editing code.
-2. The currently implemented parametric variable is `u_0`.
-3. You are running:
+2. The implemented parametric variables are:
+
+```text
+u_0
+x_cg / cg_mac
+```
+
+3. For the default user-facing parametric workflow, run:
 
 ```text
 run_parametric_analysis.m
 ```
 
+4. For a direct `x_cg` backend test, run the combined runner first and then call:
+
+```matlab
+param_out = run_parametric_sweep(long_pAV, lat_pAV, 'x_cg');
+```
+
 After running, check:
 
 1. The correct aircraft was selected in the popup from `run_combined_AVS_analysis_FINAL.m`.
-2. The parametric workbook was saved under:
+2. The parametric workbook was saved under the correct parameter folder, for example:
 
 ```text
 results\<AIRCRAFT_CASE>\Parametric\u_0\
+results\<AIRCRAFT_CASE>\Parametric\x_cg\
 ```
 
-3. The plot folder exists under:
-
-```text
-results\<AIRCRAFT_CASE>\Parametric\u_0\plots\
-```
-
+3. The plot folder exists under the selected parameter folder.
 4. The stability-envelope plot, eigenvalue plots, and A-matrix sensitivity plots were generated.
-5. Generated workbooks and plot folders are not committed unless example outputs are intentionally being versioned.
+5. For `x_cg`, verify that static-stability output includes the primary `Cm_alpha / dCm_dCL` method, the secondary neutral-point method, and any method-disagreement warnings.
+6. Generated workbooks and plot folders are not committed unless example outputs are intentionally being versioned.

@@ -66,18 +66,20 @@ This prevents geometry-sensitive parameters from being varied blindly.
 
 ## C. Implementation Status
 
-### C.1 Implemented parameter
+### C.1 Implemented parameters
 
-The first implemented parametric-analysis variable is:
+The implemented parametric-analysis variables are:
 
 ```text
 u_0
+x_cg / cg_mac
 ```
 
-The implementation consists of:
+The shared implementation consists of:
 
 ```text
 build_u0_sweep_values.m
+build_xcg_sweep_values.m
 apply_parametric_variation.m
 run_parametric_sweep.m
 export_parametric_workbook.m
@@ -91,18 +93,26 @@ The user-facing entry point is:
 run_parametric_analysis.m
 ```
 
-### C.2 Implemented output path
+The direct backend entry point is:
 
-For each selected aircraft, the current `u_0` parametric-analysis output is saved under:
+```text
+run_parametric_sweep.m
+```
+
+### C.2 Implemented output paths
+
+For each selected aircraft, parametric-analysis output is saved under a parameter-specific folder:
 
 ```text
 results\<AIRCRAFT_CASE>\Parametric\u_0\
+results\<AIRCRAFT_CASE>\Parametric\x_cg\
 ```
 
-The output folder contains:
+Each output folder contains a workbook and a plot folder, for example:
 
 ```text
 u_0_parametric_summary.xlsx
+x_cg_parametric_summary.xlsx
 plots\
 ```
 
@@ -159,6 +169,60 @@ lateral/directional branch
 
 This means the implemented `u_0` workflow preserves the validated baseline analysis path.
 
+### C.5 Implemented `x_cg / cg_mac` policy
+
+The implemented `x_cg` sweep uses the normalized center-of-gravity position:
+
+```text
+cg_mac = x_cg/c_bar
+```
+
+Default sweep range:
+
+```text
+baseline cg_mac ± 0.20
+```
+
+Safety limits:
+
+```text
+0.05 <= cg_mac <= 0.60
+```
+
+The current `x_cg` workflow is longitudinal only. Lateral/reference `x_cg` and `cg_mac` aliases are synchronized for consistency, but the lateral/directional branch is not rerun by default.
+
+The tail-arm policy preserves the baseline horizontal-tail reference station:
+
+```text
+x_tail_ref = x_cg_baseline + lt_baseline
+lt_new     = x_tail_ref - x_cg_new
+```
+
+The horizontal-tail volume ratio is recomputed from the updated `lt`:
+
+```text
+V_H = lt*St/(S*c_bar)
+```
+
+The `Cm_alpha` update is baseline preserving. The helper starts from the validated baseline direct `Cm_alpha` value and applies the incremental change caused by the new CG position and changed horizontal-tail volume.
+
+Static stability is tracked using two methods:
+
+```text
+Primary method:   Cm_alpha / dCm_dCL
+Secondary method: neutral-point static margin
+```
+
+If the two methods disagree, both are shown and the disagreement is flagged. The primary method is explicitly identified in the summary table and static-stability metadata.
+
+Critical CG estimates are interpolated when a zero crossing exists inside the accepted sweep range.
+
+### C.6 Implemented `x_cg` validation status
+
+The `x_cg` helper and sweep workflow were checked on both NAVION and B747.
+
+For NAVION, the sweep shows both static-method disagreement in the aft-CG region and a primary critical-CG crossing inside the accepted sweep range. For B747, the accepted sweep range remains stable by both static-stability methods.
+
 ---
 
 ## D. Parameter Map Table
@@ -167,7 +231,7 @@ This means the implemented `u_0` workflow preserves the validated baseline analy
 |---|---|---|---:|---:|---:|---:|---|
 | `u_0` | Flight condition | Both | Yes | No | 1 | Low | Implemented |
 | `rho` | Flight condition | Both | Yes | No | 1 | Low | Planned |
-| `x_cg` | Longitudinal stability | Longitudinal | Yes | No | 1 | Low | Planned |
+| `x_cg` | Longitudinal stability | Longitudinal | Yes | Yes | 1 | Medium | Implemented |
 | `x_ac` | Longitudinal geometry | Longitudinal | Yes | No | 2 | Low | Planned |
 | `CL0` | Aerodynamic input | Both | Yes | No | 2 | Medium | Planned |
 | `CL_alpha` | Aerodynamic input | Longitudinal | Yes | No | 1 | Low | Planned |
@@ -267,55 +331,100 @@ The A-matrix sensitivity heatmaps display the maximum absolute percent change fr
 
 ---
 
-## F. Alternative First Parameter / Next Candidate: `x_cg`
+## F. Implemented Second Parameter: `x_cg / cg_mac`
 
-The next likely parameter is:
+### F.1 Reason for implementing `x_cg`
 
-```text
-x_cg
-```
-
-Reason:
+`x_cg` was implemented as the second parameter because:
 
 ```text
 x_cg has a clear physical interpretation.
-x_cg strongly affects static margin.
+x_cg strongly affects longitudinal static stability.
 x_cg mainly affects the longitudinal branch.
-x_cg is useful for validating the longitudinal chain from center-of-gravity location to static and dynamic stability.
+x_cg is useful for validating the chain from center-of-gravity location to static margin, Cm_alpha, A-matrix behavior, and longitudinal eigenvalues.
 ```
 
-Expected chain:
+The user-facing sweep variable is:
 
 ```text
-x_cg changes
--> moment arms change
--> static margin changes
--> Cm_alpha changes
+cg_mac = x_cg/c_bar
+```
+
+### F.2 Expected chain
+
+```text
+cg_mac changes
+-> x_cg changes
+-> horizontal-tail arm lt changes under the fixed tail-reference-station policy
+-> V_H changes
+-> Cm_alpha changes through a baseline-preserving incremental update
+-> dCm/dCL changes
+-> static-stability margins change
 -> A_long changes
 -> longitudinal eigenvalues change
--> short-period and phugoid metrics change
--> longitudinal stability margin changes
+-> short-period and phugoid behavior changes
+-> max real longitudinal eigenvalue changes
+-> longitudinal stability classification may change
 ```
 
-Primary tracked outputs:
+### F.3 Primary tracked outputs
 
 ```text
-static margin
-x_NP
+cg_mac
+x_cg_ft
+lt_ft
+V_H
 Cm_alpha
-trim elevator angle
+dCm_dCL
+StaticMargin_CmAlpha
+StaticMargin_NP
+StaticStability_Primary
+StaticStability_PrimaryMethod
+StaticStability_Secondary_NP
+StaticStability_MethodAgreement
+critical CG estimates
 A_long
+B_long
 longitudinal eigenvalues
-short-period damping ratio
-phugoid damping ratio
 max real longitudinal eigenvalue
-longitudinal stability flag
+longitudinal dynamic-stability flag
+warnings
 ```
+
+### F.4 Static-stability policy
+
+The primary static-stability method is:
+
+```text
+Cm_alpha / dCm_dCL
+```
+
+The secondary method is:
+
+```text
+neutral-point static margin
+```
+
+Disagreements are flagged and retained in the output instead of being hidden.
+
+### F.5 Output plots
+
+The implemented `x_cg` workflow generates:
+
+```text
+x_cg_static_stability_envelope.png
+x_cg_Cm_alpha_dCm_dCL.png
+x_cg_stability_envelope.png
+x_cg_longitudinal_eigenvalues.png
+x_cg_A_long_sensitivity.png
+```
+
+The `x_cg` workflow intentionally does not generate `CL0/qbar` plots or lateral/directional plots, because the current `x_cg` implementation is longitudinal only.
 
 Risk level:
 
 ```text
-Low
+Medium
 ```
 
 ---
