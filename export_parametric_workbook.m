@@ -6,30 +6,15 @@ function workbook_file = export_parametric_workbook(param_out, workbook_file, op
 %   workbook_file = export_parametric_workbook(param_out, workbook_file, options)
 %
 % Purpose
-%   PA-3 export layer for the parametric-analysis workflow. This function
-%   writes the results returned by run_parametric_sweep.m to a workbook.
-%   It does not rerun any analysis and does not modify aircraft input files.
+%   Export layer for the parametric-analysis workflow. This function writes
+%   the results returned by run_parametric_sweep.m to a workbook. It does
+%   not rerun any analysis and does not modify aircraft input files.
 %
-% Typical use after run_combined_AVS_analysis_FINAL.m and run_parametric_sweep.m
-%   param_out = run_parametric_sweep(long_pAV, lat_pAV, 'u_0');
-%   export_parametric_workbook(param_out, 'PA3_u0_parametric_NAVION.xlsx');
-%
-% Sheets written
-%   Summary
-%   Sweep_Definition
-%   Baseline
-%   Longitudinal_Eigenvalues
-%   Lateral_Eigenvalues
-%   A_Long_Entries
-%   A_Lat_Entries
-%   B_Long_Entries
-%   B_Lat_Entries
-%   Longitudinal_Nondim
-%   Longitudinal_Dimensional
-%   Lateral_Nondim
-%   Lateral_Dimensional
-%   Warnings
-%   Failures
+% Implemented parameters
+%   u_0   : exports dynamic sweep outputs, eigenvalues, matrices,
+%           derivatives, warnings, and failures.
+%   x_cg  : also exports static-stability columns, primary/secondary static
+%           classification, method-agreement flags, and critical-CG metadata.
 %
 % Options
 %   options.overwrite_existing  true by default
@@ -58,7 +43,7 @@ if overwrite_existing && exist(workbook_file, 'file')
     delete(workbook_file);
 end
 
-% Summary
+% Summary.
 if isfield(param_out, 'summary_table') && istable(param_out.summary_table)
     writetable(param_out.summary_table, workbook_file, 'Sheet', 'Summary');
 else
@@ -66,17 +51,18 @@ else
         workbook_file, 'Sheet', 'Summary');
 end
 
-% Sweep definition and metadata
+% Sweep definition, baseline, and x_cg static-stability metadata.
 writetable(local_sweep_table(param_out), workbook_file, 'Sheet', 'Sweep_Definition');
 writetable(local_baseline_table(param_out), workbook_file, 'Sheet', 'Baseline');
+writetable(local_static_stability_table(param_out), workbook_file, 'Sheet', 'Static_Stability');
 
-% Eigenvalues
+% Eigenvalues.
 writetable(local_eigenvalue_table(param_out, 'longitudinal'), ...
     workbook_file, 'Sheet', 'Longitudinal_Eigenvalues');
 writetable(local_eigenvalue_table(param_out, 'lateral_directional'), ...
     workbook_file, 'Sheet', 'Lateral_Eigenvalues');
 
-% Matrices
+% Matrices.
 writetable(local_matrix_entry_table(param_out, 'longitudinal', 'A'), ...
     workbook_file, 'Sheet', 'A_Long_Entries');
 writetable(local_matrix_entry_table(param_out, 'lateral_directional', 'A'), ...
@@ -86,7 +72,7 @@ writetable(local_matrix_entry_table(param_out, 'longitudinal', 'B'), ...
 writetable(local_matrix_entry_table(param_out, 'lateral_directional', 'B'), ...
     workbook_file, 'Sheet', 'B_Lat_Entries');
 
-% Derivatives/available scalar outputs
+% Derivatives/available scalar outputs.
 writetable(local_cell_struct_table(param_out, {'derivatives','longitudinal_nondim'}, 'longitudinal_nondim'), ...
     workbook_file, 'Sheet', 'Longitudinal_Nondim');
 writetable(local_cell_struct_table(param_out, {'derivatives','longitudinal_dimensional'}, 'longitudinal_dimensional'), ...
@@ -96,7 +82,7 @@ writetable(local_cell_struct_table(param_out, {'derivatives','lateral_nondim'}, 
 writetable(local_cell_struct_table(param_out, {'derivatives','lateral_dimensional'}, 'lateral_dimensional'), ...
     workbook_file, 'Sheet', 'Lateral_Dimensional');
 
-% Warnings and failures
+% Warnings and failures.
 writetable(local_warnings_table(param_out), workbook_file, 'Sheet', 'Warnings');
 writetable(local_failures_table(param_out), workbook_file, 'Sheet', 'Failures');
 
@@ -123,6 +109,52 @@ if isfield(param_out, 'baseline') && isstruct(param_out.baseline)
 end
 if isempty(rows)
     rows = {'none','none','No baseline metadata found.'};
+end
+T = cell2table(rows, 'VariableNames', {'Source','Quantity','Value'});
+end
+
+function T = local_static_stability_table(param_out)
+rows = {};
+if isfield(param_out, 'static_stability') && isstruct(param_out.static_stability)
+    rows = [rows; local_struct_rows(param_out.static_stability, 'static_stability')]; %#ok<AGROW>
+end
+
+summary = local_get_summary(param_out);
+if ~isempty(summary) && istable(summary)
+    wanted = { ...
+        'Point', ...
+        'ParameterValue', ...
+        'cg_mac', ...
+        'Delta_cg_mac', ...
+        'x_cg_ft', ...
+        'lt_ft', ...
+        'V_H', ...
+        'Cm_alpha', ...
+        'dCm_dCL', ...
+        'StaticMargin_CmAlpha', ...
+        'StaticMargin_NP', ...
+        'x_NP_mac', ...
+        'x_NP_from_CmAlpha_mac', ...
+        'StaticStability_Primary', ...
+        'StaticStability_PrimaryMethod', ...
+        'StaticStability_Secondary_NP', ...
+        'StaticStability_MethodAgreement', ...
+        'WarningCount', ...
+        'Long_MaxRealEig', ...
+        'Long_DynamicallyStable', ...
+        'Status'};
+    present = wanted(ismember(wanted, summary.Properties.VariableNames));
+    for i = 1:height(summary)
+        source_name = sprintf('point_%d', i);
+        for j = 1:numel(present)
+            f = present{j};
+            rows(end+1,:) = {source_name, f, local_table_value_to_text(summary, f, i)}; %#ok<AGROW>
+        end
+    end
+end
+
+if isempty(rows)
+    rows = {'none','none','No static-stability metadata found.'};
 end
 T = cell2table(rows, 'VariableNames', {'Source','Quantity','Value'});
 end
@@ -154,9 +186,13 @@ end
 end
 
 function T = local_eigenvalue_table(param_out, branch_name)
+branch = {};
 point = [];
+parameter_value = [];
 u0_kt = [];
 sweep_factor = [];
+cg_mac = [];
+x_cg_ft = [];
 mode_index = [];
 real_part = [];
 imag_part = [];
@@ -174,9 +210,13 @@ n = size(eig_matrix, 2);
 for k = 1:n
     eigvals = eig_matrix(:, k);
     for j = 1:numel(eigvals)
+        branch{end+1,1} = branch_label; %#ok<AGROW>
         point(end+1,1) = k; %#ok<AGROW>
+        parameter_value(end+1,1) = local_summary_value(summary, 'ParameterValue', k); %#ok<AGROW>
         u0_kt(end+1,1) = local_summary_value(summary, 'u0_kt', k); %#ok<AGROW>
         sweep_factor(end+1,1) = local_summary_value(summary, 'SweepFactor', k); %#ok<AGROW>
+        cg_mac(end+1,1) = local_summary_value(summary, 'cg_mac', k); %#ok<AGROW>
+        x_cg_ft(end+1,1) = local_summary_value(summary, 'x_cg_ft', k); %#ok<AGROW>
         mode_index(end+1,1) = j; %#ok<AGROW>
         real_part(end+1,1) = real(eigvals(j)); %#ok<AGROW>
         imag_part(end+1,1) = imag(eigvals(j)); %#ok<AGROW>
@@ -184,9 +224,10 @@ for k = 1:n
     end
 end
 
-branch = repmat({branch_label}, numel(point), 1);
-T = table(branch, point, u0_kt, sweep_factor, mode_index, real_part, imag_part, abs_value, ...
-    'VariableNames', {'Branch','Point','u0_kt','SweepFactor','EigenvalueIndex','Real','Imag','Magnitude'});
+T = table(branch, point, parameter_value, u0_kt, sweep_factor, cg_mac, x_cg_ft, ...
+    mode_index, real_part, imag_part, abs_value, ...
+    'VariableNames', {'Branch','Point','ParameterValue','u0_kt','SweepFactor','cg_mac','x_cg_ft', ...
+    'EigenvalueIndex','Real','Imag','Magnitude'});
 end
 
 function T = local_matrix_entry_table(param_out, branch_name, matrix_name)
@@ -202,8 +243,11 @@ baseline_idx = local_get_baseline_index(param_out);
 
 branch = {};
 point = [];
+parameter_value = [];
 u0_kt = [];
 sweep_factor = [];
+cg_mac = [];
+x_cg_ft = [];
 row_index = [];
 col_index = [];
 entry_name = {};
@@ -230,8 +274,11 @@ for k = 1:n
 
             branch{end+1,1} = branch_name; %#ok<AGROW>
             point(end+1,1) = k; %#ok<AGROW>
+            parameter_value(end+1,1) = local_summary_value(summary, 'ParameterValue', k); %#ok<AGROW>
             u0_kt(end+1,1) = local_summary_value(summary, 'u0_kt', k); %#ok<AGROW>
             sweep_factor(end+1,1) = local_summary_value(summary, 'SweepFactor', k); %#ok<AGROW>
+            cg_mac(end+1,1) = local_summary_value(summary, 'cg_mac', k); %#ok<AGROW>
+            x_cg_ft(end+1,1) = local_summary_value(summary, 'x_cg_ft', k); %#ok<AGROW>
             row_index(end+1,1) = i; %#ok<AGROW>
             col_index(end+1,1) = j; %#ok<AGROW>
             entry_name{end+1,1} = sprintf('%s(%d,%d)', matrix_name, i, j); %#ok<AGROW>
@@ -243,9 +290,10 @@ for k = 1:n
     end
 end
 
-T = table(branch, point, u0_kt, sweep_factor, row_index, col_index, entry_name, ...
-    value, baseline_value, delta, percent_change, ...
-    'VariableNames', {'Branch','Point','u0_kt','SweepFactor','MatrixRow','MatrixColumn','Entry','Value','BaselineValue','Delta','PercentChange'});
+T = table(branch, point, parameter_value, u0_kt, sweep_factor, cg_mac, x_cg_ft, ...
+    row_index, col_index, entry_name, value, baseline_value, delta, percent_change, ...
+    'VariableNames', {'Branch','Point','ParameterValue','u0_kt','SweepFactor','cg_mac','x_cg_ft', ...
+    'MatrixRow','MatrixColumn','Entry','Value','BaselineValue','Delta','PercentChange'});
 end
 
 function T = local_cell_struct_table(param_out, field_path, branch_label)
@@ -272,11 +320,17 @@ end
 n = numel(C);
 T = table((1:n).', 'VariableNames', {'Point'});
 T.Branch = repmat({branch_label}, n, 1);
+T.ParameterValue = NaN(n, 1);
 T.u0_kt = NaN(n, 1);
 T.SweepFactor = NaN(n, 1);
+T.cg_mac = NaN(n, 1);
+T.x_cg_ft = NaN(n, 1);
 for k = 1:n
+    T.ParameterValue(k) = local_summary_value(summary, 'ParameterValue', k);
     T.u0_kt(k) = local_summary_value(summary, 'u0_kt', k);
     T.SweepFactor(k) = local_summary_value(summary, 'SweepFactor', k);
+    T.cg_mac(k) = local_summary_value(summary, 'cg_mac', k);
+    T.x_cg_ft(k) = local_summary_value(summary, 'x_cg_ft', k);
 end
 
 for fidx = 1:numel(all_fields)
@@ -371,6 +425,9 @@ switch branch_name
             label = 'lateral_directional';
         end
 end
+if ~isempty(E) && ~any(isfinite(real(E(:))) | isfinite(imag(E(:))))
+    E = [];
+end
 end
 
 function M = local_get_matrix(param_out, branch_name, matrix_name)
@@ -383,6 +440,9 @@ if ~isfield(param_out.matrices, branch_name) || ~isstruct(param_out.matrices.(br
 end
 if isfield(param_out.matrices.(branch_name), matrix_name)
     M = param_out.matrices.(branch_name).(matrix_name);
+end
+if ~isempty(M) && ~any(isfinite(M(:)))
+    M = [];
 end
 end
 
@@ -438,6 +498,35 @@ if ischar(value) || isstring(value)
     text_value = char(value);
 else
     text_value = default_value;
+end
+end
+
+function out = local_table_value_to_text(T, field_name, row_index)
+v = T.(field_name)(row_index,:);
+if iscell(v)
+    if isempty(v)
+        out = '';
+    else
+        out = local_table_cell_to_text(v{1});
+    end
+else
+    out = local_table_cell_to_text(v);
+end
+end
+
+function out = local_table_cell_to_text(v)
+if isnumeric(v) || islogical(v)
+    out = local_value_to_text(v);
+elseif ischar(v) || isstring(v)
+    out = char(v);
+elseif iscell(v)
+    if isempty(v)
+        out = '';
+    else
+        out = local_table_cell_to_text(v{1});
+    end
+else
+    out = class(v);
 end
 end
 
